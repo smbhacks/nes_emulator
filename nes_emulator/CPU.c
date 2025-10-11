@@ -13,10 +13,22 @@ CPU CreateCPU()
     return cpu;
 }
 
-// https://www.nesdev.org/obelisk-6502-guide/reference.html
+int TickCPU(CPU *cpu)
+{
+    // handle a opcode
+    Opcode opcode = opcodes[cpu->memory[cpu->PC]];
+    cpu->PC++;
+    opcode.doInstructionFn(&cpu, &opcode);
+    cpu->currentCycleTime += opcode.cycles;
+    return 0;
+}
+
 void CreateOpcodes()
 {
-    memset(&opcodes, 0, sizeof(opcodes));
+    // opcodes tábla init
+    Opcode invalidOpcode = { Illegal, none, 2, &DoIllegal};
+    for (int i = 0; i < 256; i++)
+        opcodes[i] = invalidOpcode;
 
     // csináljuk meg az opcodes táblát amelyet lehet indexelni opkód érték alapján (pl 0xEA -> NOP)
     int numValidOpcodes = sizeof(validOpcodes) / sizeof(validOpcodes[0]);
@@ -26,3 +38,4 @@ void CreateOpcodes()
         opcodes[opcodeValue] = validOpcodes[i].opcode;
     }
 }
+

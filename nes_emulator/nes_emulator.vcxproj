@@ -153,12 +153,15 @@
   <ItemGroup>
     <ClCompile Include="Cart.c" />
     <ClCompile Include="CPU.c" />
+    <ClCompile Include="InstructionSet.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="NES.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AddressingEnum.h" />
     <ClInclude Include="Cart.h" />
     <ClInclude Include="CPU.h" />
+    <ClInclude Include="InstructionSet.h" />
     <ClInclude Include="NES.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
