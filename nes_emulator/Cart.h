@@ -1,3 +1,4 @@
+#pragma once
 #include <SDL.h> // uint8_t miatt
 #include <stdio.h> // FILE
 
