@@ -18,7 +18,7 @@ int TickCPU(CPU *cpu)
     // handle a opcode
     Opcode opcode = opcodes[cpu->memory[cpu->PC]];
     cpu->PC++;
-    opcode.doInstructionFn(&cpu, &opcode);
+    opcode.doInstructionFn(cpu, &opcode);
     cpu->currentCycleTime += opcode.cycles;
     return 0;
 }

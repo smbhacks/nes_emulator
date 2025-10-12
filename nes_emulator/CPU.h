@@ -3,6 +3,7 @@
 #include <SDL.h> // uint8_t miatt
 #include "InstructionSet.h"
 #include "AddressingEnum.h"
+#include <stdbool.h>
 
 typedef struct CPU {
     // 32 kb memória 
