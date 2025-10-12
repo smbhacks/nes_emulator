@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
     SDL_RenderClear(renderer);
 
     NES nes = CreateNES();
-    SetCartNES(&nes, "ld.nes");
+    SetCartNES(&nes, "nestest.nes");
     ResetNES(&nes);
 
     uint32_t timerStart, time;

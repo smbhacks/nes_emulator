@@ -20,7 +20,9 @@ Cart InitCart(const char* path)
 
 	// .nes: a PRG után következik a CHR, ha van
 	cart.CHR = (uint8_t*)malloc(cart.CHR_size);
-	fread(cart.PRG, cart.CHR_size, 1, cartFile);
+	fread(cart.CHR, cart.CHR_size, 1, cartFile);
+
+	fclose(cartFile);
 
 	return cart;
 }

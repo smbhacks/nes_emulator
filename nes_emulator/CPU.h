@@ -5,6 +5,8 @@
 #include "AddressingEnum.h"
 #include <stdbool.h>
 
+#define LOG_CPU true
+
 typedef struct CPU {
     // 32 kb memória 
     uint8_t* memory;
@@ -88,6 +90,67 @@ enum Instruction
     TXA,
     TXS,
     TYA
+};
+
+// ez csak debuggolásra kell!!!!!!!!!
+static const char* InstructionString[] = {
+    "???",
+    "ADC",
+    "AND",
+    "ASL",
+    "BCC",
+    "BCS",
+    "BEQ",
+    "BIT",
+    "BMI",
+    "BNE",
+    "BPL",
+    "BRK",
+    "BVC",
+    "BVS",
+    "CLC",
+    "CLD",
+    "CLI",
+    "CLV",
+    "CMP",
+    "CPX",
+    "CPY",
+    "DEC",
+    "DEX",
+    "DEY",
+    "EOR",
+    "INC",
+    "INX",
+    "INY",
+    "JMP",
+    "JSR",
+    "LDA",
+    "LDX",
+    "LDY",
+    "LSR",
+    "NOP",
+    "ORA",
+    "PHA",
+    "PHP",
+    "PLA",
+    "PLP",
+    "ROL",
+    "ROR",
+    "RTI",
+    "RTS",
+    "SBC",
+    "SEC",
+    "SED",
+    "SEI",
+    "STA",
+    "STX",
+    "STY",
+    "TAX",
+    "TAY",
+    "TSX",
+    "TXA",
+    "TXS",
+    "TYA"
 };
 
 typedef struct Opcode {
