@@ -1,11 +1,12 @@
 #pragma once
 #include <stdint.h>
+#include <stdbool.h>
 #include "AddressingEnum.h"
 
 typedef struct CPU CPU;
 typedef struct Opcode Opcode;
 
-uint8_t GetValueWithAddressing(CPU* cpu, int addressingMode);
+uint8_t GetValueWithAddressing(CPU* cpu, int addressingMode, bool checkPageCrossEnabled);
 void DoIllegal();
 void DoADC(CPU *cpu, Opcode *opcode);
 void DoAND(CPU *cpu, Opcode *opcode);

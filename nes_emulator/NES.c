@@ -17,7 +17,7 @@ void RemoveCartNES(NES* nes)
 	if (nes->cart.PRG != NULL)
 		free(nes->cart.PRG);
 	if (nes->cart.CHR != NULL)
-		free(nes->cart.PRG);
+		free(nes->cart.CHR);
 }
 
 void DestroyNES(NES* nes)
@@ -53,13 +53,15 @@ void ResetNES(NES *nes)
 
 	// ugrás a reset rutinra, amelynek címe CPU:FFFC-nél van
 	nes->cpu.PC = nes->cpu.memory[0xFFFC] + 256 * nes->cpu.memory[0xFFFD];
+	nes->cpu.currentCycleTimeInFrame = 7;
 }
 
 void TickNES(NES *nes)
 {
 	while (1)
 	{
-		nes->cpu.currentCycleTime = 0;
 		TickCPU(&nes->cpu);
+		nes->cpu.currentCycleTimeInFrame += nes->cpu.currentCycleTime;
 	}
+	nes->cpu.currentCycleTimeInFrame = 0;
 }

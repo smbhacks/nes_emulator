@@ -1,5 +1,6 @@
 #include "InstructionSet.h"
 #include "CPU.h"
+#include "PPU.h"
 
 // https://www.nesdev.org/wiki/Instruction_reference
 
@@ -469,7 +470,11 @@ void DoLDY(CPU* cpu, Opcode* opcode)
 void DoStoreOpcode(CPU* cpu, Opcode* opcode, uint8_t value)
 {
 	uint16_t addr = GetPCOfAddressing(cpu, opcode->addressingMode, false);
-	cpu->memory[addr] = value;
+
+	if (addr / 256 == 0x20)
+		WritingToPPUReg(cpu->ppu, addr, value);
+	else
+		cpu->memory[addr] = value;
 }
 
 void DoSTA(CPU* cpu, Opcode* opcode)

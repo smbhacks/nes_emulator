@@ -15,6 +15,8 @@ CPU CreateCPU()
 
 int TickCPU(CPU *cpu)
 {
+    cpu->currentCycleTime = 0;
+
     // handle a opcode
     Opcode opcode = opcodes[cpu->memory[cpu->PC]];
     cpu->PC++;
@@ -32,7 +34,7 @@ int TickCPU(CPU *cpu)
         processorFlags += (cpu->d << 3);
         processorFlags += (cpu->v << 6);
         processorFlags += (cpu->n << 7);
-        printf("A:%02X X:%02X Y:%02X P:%02X SP:%02X\n", cpu->a, cpu->x, cpu->y, processorFlags, cpu->s);
+        printf("A:%02X X:%02X Y:%02X P:%02X SP:%02X Cyc:%d CycInFrame:%d\n", cpu->a, cpu->x, cpu->y, processorFlags, cpu->s, cpu->currentCycleTime, cpu->currentCycleTimeInFrame);
     }
 
     return 0;

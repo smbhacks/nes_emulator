@@ -28,6 +28,7 @@ typedef struct CPU {
 
     // jelenlegi opkód cycle ideje
     int currentCycleTime; // azért van itt, hogy az instructionSet is tudja módosítani
+    int currentCycleTimeInFrame;
 
     PPU* ppu; // a CPU-->PPU között van vezeték, a CPU memóriájában vannak regiszterek (pl 0x2000), amikkel lehet a PPU-val kommunikálni
 } CPU;
