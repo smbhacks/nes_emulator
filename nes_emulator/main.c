@@ -1,6 +1,6 @@
-#include <SDL.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <SDL.h>
 
 #include "NES.h"
 
@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
     SDL_RenderClear(renderer);
 
     NES nes = CreateNES();
-    SetCartNES(&nes, "nestest.nes");
+    SetCartNES(&nes, "ld.nes");
     ResetNES(&nes);
 
     uint32_t timerStart, time;
@@ -58,6 +58,9 @@ int main(int argc, char* argv[]) {
             SDL_Delay(MSPF - time);
         }
     }
+
+    RemoveCartNES(&nes);
+    DestroyNES(&nes);
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

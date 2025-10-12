@@ -1,6 +1,7 @@
 #pragma once
-#include <SDL.h> // uint8_t miatt
+#include <stdint.h>
 #include <stdio.h> // FILE
+#include <stdlib.h>
 
 typedef struct Cart {
 	// fejléc
@@ -12,4 +13,4 @@ typedef struct Cart {
 	uint8_t *CHR;
 } Cart;
 
-Cart InitCart(const char* path);
+Cart InsertCart(const char* path);

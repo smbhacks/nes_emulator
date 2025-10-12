@@ -1,5 +1,5 @@
 #pragma once
-#include <SDL.h> //uint8_t miatt
+#include <stdint.h>
 #include "AddressingEnum.h"
 
 typedef struct CPU CPU;

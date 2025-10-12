@@ -30,6 +30,9 @@
     <ClCompile Include="InstructionSet.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PPU.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPU.h">
@@ -45,6 +48,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AddressingEnum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PPU.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

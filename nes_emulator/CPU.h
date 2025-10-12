@@ -1,11 +1,14 @@
 // 6502 CPU
 #pragma once
-#include <SDL.h> // uint8_t miatt
+#include <stdint.h>
 #include "InstructionSet.h"
 #include "AddressingEnum.h"
 #include <stdbool.h>
+#include <stdlib.h>
 
 #define LOG_CPU true
+
+typedef struct PPU PPU;
 
 typedef struct CPU {
     // 32 kb memória 
@@ -25,6 +28,8 @@ typedef struct CPU {
 
     // jelenlegi opkód cycle ideje
     int currentCycleTime; // azért van itt, hogy az instructionSet is tudja módosítani
+
+    PPU* ppu; // a CPU-->PPU között van vezeték, a CPU memóriájában vannak regiszterek (pl 0x2000), amikkel lehet a PPU-val kommunikálni
 } CPU;
 
 void CreateOpcodes();

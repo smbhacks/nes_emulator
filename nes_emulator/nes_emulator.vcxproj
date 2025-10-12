@@ -156,6 +156,7 @@
     <ClCompile Include="InstructionSet.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="NES.c" />
+    <ClCompile Include="PPU.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AddressingEnum.h" />
@@ -163,6 +164,7 @@
     <ClInclude Include="CPU.h" />
     <ClInclude Include="InstructionSet.h" />
     <ClInclude Include="NES.h" />
+    <ClInclude Include="PPU.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

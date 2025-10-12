@@ -1,6 +1,6 @@
 #include "Cart.h"
 
-Cart InitCart(const char* path)
+Cart InsertCart(const char* path)
 {
 	Cart cart;
 

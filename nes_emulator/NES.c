@@ -5,14 +5,30 @@ NES CreateNES()
 	NES nes;
 
 	nes.cpu = CreateCPU();
+	nes.ppu = CreatePPU();
+
+	nes.cpu.ppu = &nes.ppu;
 
 	return nes;
+}
+
+void RemoveCartNES(NES* nes)
+{
+	if (nes->cart.PRG != NULL)
+		free(nes->cart.PRG);
+	if (nes->cart.CHR != NULL)
+		free(nes->cart.PRG);
+}
+
+void DestroyNES(NES* nes)
+{
+	free(nes->cpu.memory);
 }
 
 
 void SetCartNES(NES* nes, const char* path)
 {
-	nes->cart = InitCart(path);
+	nes->cart = InsertCart(path);
 }
 
 void ResetNES(NES *nes)

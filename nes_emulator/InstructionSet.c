@@ -64,7 +64,8 @@ uint16_t GetPCOfAddressing(CPU* cpu, int addressingMode, bool checkPageCrossEnab
 // https://www.nesdev.org/wiki/CPU_addressing_modes
 uint8_t GetValueWithAddressing(CPU* cpu, int addressingMode, bool checkPageCrossEnabled)
 {
-	return cpu->memory[GetPCOfAddressing(cpu, addressingMode, checkPageCrossEnabled)];
+	uint16_t address = GetPCOfAddressing(cpu, addressingMode, checkPageCrossEnabled);
+	return cpu->memory[address];
 }
 
 void SetZeroFlag(CPU* cpu, int val)

@@ -30,7 +30,6 @@ int TickCPU(CPU *cpu)
         processorFlags += (cpu->z << 1);
         processorFlags += (cpu->i << 2);
         processorFlags += (cpu->d << 3);
-        processorFlags += (0b11 << 5);
         processorFlags += (cpu->v << 6);
         processorFlags += (cpu->n << 7);
         printf("A:%02X X:%02X Y:%02X P:%02X SP:%02X\n", cpu->a, cpu->x, cpu->y, processorFlags, cpu->s);
