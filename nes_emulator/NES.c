@@ -62,6 +62,12 @@ void TickNES(NES *nes)
 	{
 		TickCPU(&nes->cpu);
 		nes->cpu.currentCycleTimeInFrame += nes->cpu.currentCycleTime;
+		int ppuCyclesToDo = 3 * nes->cpu.currentCycleTime; // a PPU egy CPU órajel alatt 3 órajelet fut
+		while (ppuCyclesToDo)
+		{
+			TickPPU(&nes->ppu);
+			ppuCyclesToDo--;
+		}
 	}
 	nes->cpu.currentCycleTimeInFrame = 0;
 }

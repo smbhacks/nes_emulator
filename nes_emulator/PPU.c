@@ -96,3 +96,95 @@ void WritingToPPUReg(PPU* ppu, uint16_t reg, uint8_t value)
 		break;
 	}
 }
+
+void IncHoriV(PPU* ppu)
+{
+	// coarseX ezért 5-bites, mivel ezzel választjuk ki, hogy melyik 8 pixel hosszú tile-on vagyunk
+	// ebből 32 fér a képernyőre 
+	ppu->v.coarseX++;
+	if (ppu->v.coarseX == 0)
+		// ha coarseX túlcsordulás történt (31->0), akkor válasszuk ki a következő horizontális nametable-t
+		// 0: 0x2000 bal 1
+		// 1: 0x2400 jobb 1
+		// 2: 0x2800 bal 2
+		// 3: 0x2c00 jobb 2
+		ppu->v.nametableSelect ^= 1;
+}
+
+void IncVertV(PPU* ppu)
+{
+	ppu->v.fineY++;
+	if (ppu->v.fineY == 0) {
+		// ha fineY túlcsordulás történt (7->0), akkor növeljük coarseY-t
+		ppu->v.coarseY++;
+		if (ppu->v.coarseY == 30) {
+			// ha egy nametable végére értünk
+			ppu->v.coarseY = 0;
+			ppu->v.nametableSelect ^= 2; // válasszuk ki a következő vertikális nametable-t (0, 1: "fent"; 2, 3: "lent")
+		}
+	}
+}
+
+void UpdateV(PPU* ppu)
+{
+	if (ppu->ppuDotY < 240) // pre-rendertől utolsó látható scanline-ig
+	{
+		// hori(v) növelés 0~256 között és 328 után
+		if (((0 < ppu->ppuDotX && ppu->ppuDotX <= 256) || ppu->ppuDotX >= 328) && (ppu->ppuDotX % 8 == 0))
+			IncHoriV(ppu);
+
+		// vert(v) növelés
+		if (ppu->ppuDotX == 256)
+			IncVertV(ppu);
+
+		// 257-nél a t X-et átmásoljuk v X-be
+		if (ppu->ppuDotX == 257) 
+			ppu->v.coarseX = ppu->t.coarseX;
+
+		// pre-render scanline-on vert(v) = vert(t) 280 és 304 között
+		if (ppu->ppuDotY == -1 && (280 <= ppu->ppuDotX && ppu->ppuDotX <= 304)) {
+			ppu->v.coarseY = ppu->t.coarseY;
+			ppu->v.fineY = ppu->t.fineY;
+		}
+	}
+}
+
+void UpdateVblankFlag(PPU* ppu)
+{
+	// flag beállítása (1, 241)-nél
+	if (ppu->ppuDotX == 1 && ppu->ppuDotY == 241)
+		ppu->vblankFlag = true;
+
+	// flag törlése (1, -1)-nél (pre-render)
+	if (ppu->ppuDotX == 1 && ppu->ppuDotY == -1)
+		ppu->vblankFlag = false;
+}
+
+void UpdateSprite0Flag(PPU* ppu)
+{
+	// flag törlése (1, -1)-nél (pre-render)
+	if (ppu->ppuDotX == 1 && ppu->ppuDotY == -1)
+		ppu->sprite0Flag = false;
+}
+
+// https://www.nesdev.org/w/images/default/4/4f/Ppu.svg
+void TickPPU(PPU* ppu)
+{
+	// flagek updatelése 
+	UpdateSprite0Flag(ppu);
+	UpdateVblankFlag(ppu);
+	if(ppu->renderBg)
+		UpdateV(ppu);
+
+	// következő ppu pont beállítása
+	ppu->ppuDotX++;
+	if (ppu->ppuDotX >= 340)
+	{
+		ppu->ppuDotX = 0;
+		ppu->ppuDotY++;
+		if (ppu->ppuDotY >= 260)
+		{
+			ppu->ppuDotY = -1;
+		}
+	}
+}

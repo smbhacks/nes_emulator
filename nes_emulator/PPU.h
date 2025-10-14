@@ -26,7 +26,16 @@ typedef struct PPU {
 	// (Object Attribute Memory) 256 byteos PPU belső memória, amely a "sprite"-okat rajzolja. 64 sprite tárolására képes. A CPU ezt   
 	// 3 regiszterrel tudja módosítani. Általában csak 1-et használnak, az "OAMDMA" regisztert, amely kimásolja a CPU egy 256 bájtnyni részét a PPU OAMjába.
 	uint8_t* oam;
-	int ppuDotX, ppuDotY;
+
+	// 0 idle
+	// 1~256 látható pontok
+	// 257~340 nem látható pontok (most az egyszerűség kedvéért ezt elhanyagolom)
+	int ppuDotX;
+	// -1 renderelés előtti scanline (pre-render scanline)
+	// 0~239 láthathó scanline (kijelzőn látszik!)
+	// 240 renderelés utáni scanline
+	// 241~260 vblank 
+	int ppuDotY;
 	
 	// PPU_REG_CTRL
 	bool vram32Increment; //false: +1, előre megy, true: +32, lefelé megy (PPU_REG_DATA írás után)
@@ -47,6 +56,7 @@ typedef struct PPU {
 
 	// PPU_REG_STATUS
 	bool vblankFlag; //ez egy belső flag, nem mindig tükrözi a valóságot (https://www.nesdev.org/wiki/PPU_registers#Vblank_flag)
+	bool sprite0Flag; //true ha a 0. sprite rajzolását érzékelte a PPU
 
 	uint8_t oamDmaPage; // OAM DMA esetén a CPU-ban ezen a "page"-en lévő adatot másoljuk a PPU OAMjába
 
@@ -67,3 +77,4 @@ typedef struct PPU {
 PPU CreatePPU();
 void DestroyPPU(PPU* ppu);
 void WritingToPPUReg(PPU* ppu, uint16_t reg, uint8_t value);
+void TickPPU(PPU* ppu);
