@@ -81,6 +81,8 @@ typedef struct PPU {
 	} v, t; //15-bit, jelenlegi VRAM address (ebből csak 14-bit használható), és egy temp VRAM address
 	uint8_t x; //3-bit, finom X scroll
 	bool secondWrite; //1-bit, ezzel különbözteti meg ugyanazon a regiszteren érkező A és B értéket (w)
+
+	uint8_t* display; // 256x240 kijelző memóriája (RGB24). Az SDL ezt fogja majd megjeleníteni!
 } PPU;
 
 PPU CreatePPU();
