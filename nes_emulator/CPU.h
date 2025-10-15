@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define LOG_CPU true
+#define LOG_CPU false
 
 typedef struct PPU PPU;
 

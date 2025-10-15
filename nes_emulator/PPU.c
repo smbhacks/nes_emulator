@@ -97,6 +97,48 @@ void WritingToPPUReg(PPU* ppu, uint16_t reg, uint8_t value)
 	}
 }
 
+uint8_t ReadingFromPPUReg(PPU* ppu, uint16_t reg)
+{
+	switch (reg)
+	{
+	case PPU_REG_CTRL: {
+		return 0;
+	}
+	case PPU_REG_MASK: {
+		return 0;
+	}
+	case PPU_REG_STATUS: {
+		uint8_t value = (ppu->vblankFlag << 7) + (ppu->sprite0Flag << 6);
+		ppu->vblankFlag = 0; //olvasáson törtlése kerül
+		return value;
+	}
+	case PPU_REG_OAMADDR: {
+		return 0;
+	}
+	case PPU_REG_OAMDATA: {
+		// most nem implementálom, mert már maga a konzolon bugos és szinte semmilyen játék nem használja
+		return 0;
+	}
+	case PPU_REG_SCROLL: {
+		return 0;
+	}
+	case PPU_REG_ADDR: {
+		return 0;
+	}
+	case PPU_REG_DATA: {
+		// több részlet PPU.h-ban a PPU struct-ban
+		uint8_t value = ppu->PPUReadBuff;
+		ppu->PPUReadBuff = ppu->memory[ppu->v.value];
+		return value;
+	}
+	case PPU_REG_OAMDMA: {
+		return 0;
+	}
+	default:
+		return 0;
+	}
+}
+
 void IncHoriV(PPU* ppu)
 {
 	// coarseX ezért 5-bites, mivel ezzel választjuk ki, hogy melyik 8 pixel hosszú tile-on vagyunk
@@ -153,18 +195,18 @@ void UpdateVblankFlag(PPU* ppu)
 {
 	// flag beállítása (1, 241)-nél
 	if (ppu->ppuDotX == 1 && ppu->ppuDotY == 241)
-		ppu->vblankFlag = true;
+		ppu->vblankFlag = 1;
 
 	// flag törlése (1, -1)-nél (pre-render)
 	if (ppu->ppuDotX == 1 && ppu->ppuDotY == -1)
-		ppu->vblankFlag = false;
+		ppu->vblankFlag = 0;
 }
 
 void UpdateSprite0Flag(PPU* ppu)
 {
 	// flag törlése (1, -1)-nél (pre-render)
 	if (ppu->ppuDotX == 1 && ppu->ppuDotY == -1)
-		ppu->sprite0Flag = false;
+		ppu->sprite0Flag = 0;
 }
 
 // https://www.nesdev.org/w/images/default/4/4f/Ppu.svg

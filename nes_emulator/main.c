@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
     SDL_RenderClear(renderer);
 
     NES nes = CreateNES();
+    nes.cpu.ppu = &nes.ppu;
     SetCartNES(&nes, "ld.nes");
     ResetNES(&nes);
 

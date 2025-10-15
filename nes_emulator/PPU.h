@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #define PPU_MEM_PATTERN_TABLE_SIZE     0x1000
 #define PPU_MEM_PATTERN_TABLES_START   0x0000
@@ -55,8 +56,13 @@ typedef struct PPU {
 	bool emphasizeBlue;
 
 	// PPU_REG_STATUS
-	bool vblankFlag; //ez egy belső flag, nem mindig tükrözi a valóságot (https://www.nesdev.org/wiki/PPU_registers#Vblank_flag)
-	bool sprite0Flag; //true ha a 0. sprite rajzolását érzékelte a PPU
+	int vblankFlag; //ez egy belső flag, nem mindig tükrözi a valóságot (https://www.nesdev.org/wiki/PPU_registers#Vblank_flag)
+	int sprite0Flag; //true ha a 0. sprite rajzolását érzékelte a PPU
+
+	// A PPU túl lassú, hogy időben odaadja az $2007 által olvasott értéket, ezért
+	// a PPU egy buffert használ, amely minden olvasásnál frissül.
+	// Ettől a PPU $2007 olvasása mindig 1 olvasással késik, ezért a játékok egy dummy olvasást csinálnak az address beállítása után
+	uint8_t PPUReadBuff; 
 
 	uint8_t oamDmaPage; // OAM DMA esetén a CPU-ban ezen a "page"-en lévő adatot másoljuk a PPU OAMjába
 
@@ -77,4 +83,5 @@ typedef struct PPU {
 PPU CreatePPU();
 void DestroyPPU(PPU* ppu);
 void WritingToPPUReg(PPU* ppu, uint16_t reg, uint8_t value);
+uint8_t ReadingFromPPUReg(PPU* ppu, uint16_t reg);
 void TickPPU(PPU* ppu);

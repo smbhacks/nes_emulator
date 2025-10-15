@@ -20,12 +20,16 @@ int TickCPU(CPU *cpu)
     // handle a opcode
     Opcode opcode = opcodes[cpu->memory[cpu->PC]];
     cpu->PC++;
-    opcode.doInstructionFn(cpu, &opcode);
-    cpu->currentCycleTime += opcode.cycles;
 
     if (LOG_CPU) {
         printf("%04X    ", cpu->PC);
         printf("%s ", InstructionString[opcode.instruction]);
+    }
+
+    opcode.doInstructionFn(cpu, &opcode);
+    cpu->currentCycleTime += opcode.cycles;
+
+    if (LOG_CPU) {
         // P = nv11dizc
         uint8_t processorFlags = 0;
         processorFlags += (cpu->c << 0);
@@ -34,7 +38,7 @@ int TickCPU(CPU *cpu)
         processorFlags += (cpu->d << 3);
         processorFlags += (cpu->v << 6);
         processorFlags += (cpu->n << 7);
-        printf("A:%02X X:%02X Y:%02X P:%02X SP:%02X Cyc:%d CycInFrame:%d\n", cpu->a, cpu->x, cpu->y, processorFlags, cpu->s, cpu->currentCycleTime, cpu->currentCycleTimeInFrame);
+        printf("\t\t\tA:%02X X:%02X Y:%02X P:%02X SP:%02X Cyc:%d CycInFrame:%d\n", cpu->a, cpu->x, cpu->y, processorFlags, cpu->s, cpu->currentCycleTime, cpu->currentCycleTimeInFrame);
     }
 
     return 0;

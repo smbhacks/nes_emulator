@@ -16,23 +16,29 @@ uint16_t GetPCOfAddressing(CPU* cpu, int addressingMode, bool checkPageCrossEnab
 	{
 	case relative:
 	case immediate: {
+		if(LOG_CPU) printf("#$%02X", cpu->memory[cpu->PC]);
 		return cpu->PC++;
 	}
 	case zeropage: {
+		if (LOG_CPU) printf("$%02X", cpu->memory[cpu->PC]);
 		return cpu->memory[cpu->PC++];
 	}
 	case absolute: {
+		if (LOG_CPU) printf("$%02X%02X", cpu->memory[cpu->PC+1], cpu->memory[cpu->PC]);
 		uint8_t low = cpu->memory[cpu->PC++];
 		uint8_t high = cpu->memory[cpu->PC++];
 		return low + 256 * high;
 	}
 	case zeropage_x: {
+		if (LOG_CPU) printf("$%02X,x", cpu->memory[cpu->PC]);
 		return (cpu->memory[cpu->PC++] + cpu->x) % 256;
 	}
 	case zeropage_y: {
+		if (LOG_CPU) printf("$%02X,y", cpu->memory[cpu->PC]);
 		return (cpu->memory[cpu->PC++] + cpu->y) % 256;
 	}
 	case absolute_x: {
+		if (LOG_CPU) printf("$%02X%02X,x", cpu->memory[cpu->PC+1], cpu->memory[cpu->PC]);
 		uint8_t low = cpu->memory[cpu->PC++];
 		uint8_t high = cpu->memory[cpu->PC++];
 		uint16_t examinedPC = low + 256 * high + cpu->x;
@@ -40,6 +46,7 @@ uint16_t GetPCOfAddressing(CPU* cpu, int addressingMode, bool checkPageCrossEnab
 		return examinedPC;
 	}
 	case absolute_y: {
+		if (LOG_CPU) printf("$%02X%02X,y", cpu->memory[cpu->PC + 1], cpu->memory[cpu->PC]);
 		uint8_t low = cpu->memory[cpu->PC++];
 		uint8_t high = cpu->memory[cpu->PC++];
 		uint16_t examinedPC = low + 256 * high + cpu->y;
@@ -47,14 +54,18 @@ uint16_t GetPCOfAddressing(CPU* cpu, int addressingMode, bool checkPageCrossEnab
 		return examinedPC;
 	}
 	case indexed_indirect: {
+		if (LOG_CPU) printf("($%02X,x)", cpu->memory[cpu->PC]);
 		uint16_t examinedPC = cpu->memory[(cpu->memory[cpu->PC] + cpu->x) % 256] + 256 * cpu->memory[(cpu->memory[cpu->PC] + cpu->x + 1) % 256];
 		cpu->PC++;
+		if (LOG_CPU) printf(" [$%04X]", examinedPC);
 		return examinedPC;
 	}
 	case indirect_indexed: {
+		if (LOG_CPU) printf("($%02X),y", cpu->memory[cpu->PC]);
 		uint16_t examinedPC = cpu->memory[cpu->PC] + 256 * cpu->memory[(cpu->PC + 1) % 256] + cpu->y;
 		if (checkPageCrossEnabled) CheckPageCross(cpu, examinedPC);
 		cpu->PC++;
+		if (LOG_CPU) printf(" [$%04X]", examinedPC);
 		return examinedPC;
 	}
 	default:
@@ -445,8 +456,12 @@ void DoJSR(CPU* cpu, Opcode* opcode)
 
 void DoLoadOpcode(CPU* cpu, Opcode* opcode, uint8_t* reg)
 {
-	uint8_t value = GetValueWithAddressing(cpu, opcode->addressingMode, true);
-	*reg = value;
+	uint16_t addr = GetPCOfAddressing(cpu, opcode->addressingMode, false);
+
+	if (addr / 256 == 0x20)
+		*reg = ReadingFromPPUReg(cpu->ppu, addr);
+	else
+		*reg = cpu->memory[addr];
 
 	SetZeroFlag(cpu, *reg);
 	SetNegativeFlag(cpu, *reg);
