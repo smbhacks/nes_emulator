@@ -22,6 +22,8 @@ void WritingToPPUReg(PPU* ppu, uint16_t reg, uint8_t value)
 	switch (reg)
 	{
 	case PPU_REG_CTRL: {
+		int prevNMIenabled = ppu->nmiEnabled;
+
 		ppu->t.nametableSelect = value & 0b11;
 		ppu->vram32Increment			  = value & (1 << 2);
 		ppu->spritesSecondPatternSelected = value & (1 << 3);
@@ -30,8 +32,8 @@ void WritingToPPUReg(PPU* ppu, uint16_t reg, uint8_t value)
 		ppu->nmiEnabled					  = value & (1 << 7);
 
 		// https://www.nesdev.org/wiki/NMI#Old_emulators
-		// az NES akkor is generál egy NMI-t, ha a PPU_REG_CTRL-ra írunk és a PPU vblank flagje magas 
-		if (ppu->vblankFlag && ppu->nmiEnabled)
+		// az NES akkor is generál egy NMI-t, ha a PPU_REG_CTRL-on 0-ról 1-re írjuk az NMI enable bitet és a PPU vblank flagje magas 
+		if (ppu->vblankFlag && !prevNMIenabled && ppu->nmiEnabled)
 			ppu->generateNMI = true;
 
 		break;

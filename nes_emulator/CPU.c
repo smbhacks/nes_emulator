@@ -13,11 +13,6 @@ CPU CreateCPU()
     return cpu;
 }
 
-void GenerateNMI(CPU* cpu)
-{
-
-}
-
 int TickCPU(CPU *cpu)
 {
     cpu->currentCycleTime = 0;
