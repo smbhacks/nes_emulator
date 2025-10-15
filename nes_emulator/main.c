@@ -7,7 +7,7 @@
 const int WINDOW_SIZE = 1;
 const int FPS = 60;
 
-void UpdateDisplayTexture(PPU* ppu, SDL_Texture* texture, int numLoops)
+/*void UpdateDisplayTexture(PPU* ppu, SDL_Texture* texture, int numLoops)
 {
     void* pixelsPtr;
     int bytesPerRow;
@@ -28,7 +28,7 @@ void UpdateDisplayTexture(PPU* ppu, SDL_Texture* texture, int numLoops)
     }
 
     SDL_UnlockTexture(texture);
-}
+}*/
 
 int main(int argc, char* argv[]) {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -75,9 +75,12 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        int tmp;
+        SDL_LockTexture(displayTexture, NULL, &nes.ppu.display, &tmp);
         TickNES(&nes); // futtasuk az emulátort 1 frame-t
+        SDL_UnlockTexture(displayTexture);
 
-        UpdateDisplayTexture(&nes.ppu, displayTexture, numLoops);
+        //UpdateDisplayTexture(&nes.ppu, displayTexture, numLoops);
         SDL_RenderCopy(renderer, displayTexture, NULL, NULL); // texture megjelenítése az egész képernyőn
         SDL_RenderPresent(renderer);
 

@@ -15,4 +15,3 @@ void ResetNES(NES *nes);
 void TickNES(NES *nes);
 void RemoveCartNES(NES* nes);
 void DestroyNES(NES* nes);
-void GenerateNMI(NES* nes);

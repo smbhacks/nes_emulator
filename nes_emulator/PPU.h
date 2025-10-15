@@ -5,8 +5,7 @@
 
 #define PPU_MEM_PATTERN_TABLE_SIZE     0x1000
 #define PPU_MEM_PATTERN_TABLES_START   0x0000
-#define PPU_MEM_NAMETABLE_SIZE		   0x3c0
-#define PPU_MEM_ATTRIBUTE_TABLE_SIZE   0x40
+#define PPU_MEM_NAMETABLE_SIZE		   0x400
 #define PPU_MEM_NAMETABLES_START	   0x2000
 #define PPU_MEM_PALETTES_SIZE          0x20
 #define PPU_MEM_PALETTES_START         0x3f00
@@ -82,7 +81,7 @@ typedef struct PPU {
 	uint8_t x; //3-bit, finom X scroll
 	bool secondWrite; //1-bit, ezzel különbözteti meg ugyanazon a regiszteren érkező A és B értéket (w)
 
-	uint8_t* display; // 256x240 kijelző memóriája (RGB24). Az SDL ezt fogja majd megjeleníteni!
+	uint8_t* display;
 } PPU;
 
 PPU CreatePPU();

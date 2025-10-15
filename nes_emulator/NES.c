@@ -37,6 +37,7 @@ void ResetNES(NES *nes)
 
 	// mapper specifikus inicializálás itt. az enyém csak NROM-ot fogad
 	// NROM esetén ha 16kb PRG van, akkor azt CPU:8000~BFFF és CPU:C000~FFFF-re rakja. 32kb esetén CPU:8000~FFFF
+	// PRG:
 	int j = 0;
 	for (int i = 0x8000; i <= 0xFFFF; i++)
 	{
@@ -47,6 +48,17 @@ void ResetNES(NES *nes)
 		{
 			// 16kb esetén tükrözés a CPU memóriájában
 			j = 0;
+		}
+	}
+	// CHR
+	// Ha 0, akkor CHR-RAMot használ a játék, vagyis a CPU generálja a grafikát a PPU-ra 
+	// Ha nem 0, akkor mi fogjuk rárakni (és ezt egyébként a CPU nem tudja felülírni), ez CHR-ROM
+	// Ha nem 0, akkor van legalább 8kb CHR-ROM
+	if (nes->cart.CHR_size != 0)
+	{
+		for (int i = 0x0000; i <= 0x1FFF; i++)
+		{
+			nes->ppu.memory[i] = nes->cart.CHR[i];
 		}
 	}
 
