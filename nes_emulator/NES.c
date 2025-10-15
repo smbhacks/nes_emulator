@@ -25,7 +25,6 @@ void DestroyNES(NES* nes)
 	free(nes->cpu.memory);
 }
 
-
 void SetCartNES(NES* nes, const char* path)
 {
 	nes->cart = InsertCart(path);
@@ -58,7 +57,8 @@ void ResetNES(NES *nes)
 
 void TickNES(NES *nes)
 {
-	while (1)
+	nes->ppu.endOfFrame = false;
+	while (!nes->ppu.endOfFrame)
 	{
 		TickCPU(&nes->cpu);
 		nes->cpu.currentCycleTimeInFrame += nes->cpu.currentCycleTime;

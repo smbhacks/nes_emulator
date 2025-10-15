@@ -5,10 +5,9 @@
 #include "AddressingEnum.h"
 #include <stdbool.h>
 #include <stdlib.h>
+#include "PPU.h"
 
-#define LOG_CPU false
-
-typedef struct PPU PPU;
+#define LOG_CPU true
 
 typedef struct CPU {
     // 32 kb memória 

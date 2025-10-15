@@ -28,6 +28,12 @@ void WritingToPPUReg(PPU* ppu, uint16_t reg, uint8_t value)
 		ppu->bgSecondPatternSelected	  = value & (1 << 4);
 		ppu->spritesAre8x16				  = value & (1 << 5);
 		ppu->nmiEnabled					  = value & (1 << 7);
+
+		// https://www.nesdev.org/wiki/NMI#Old_emulators
+		// az NES akkor is generál egy NMI-t, ha a PPU_REG_CTRL-ra írunk és a PPU vblank flagje magas 
+		if (ppu->vblankFlag && ppu->nmiEnabled)
+			ppu->generateNMI = true;
+
 		break;
 	}
 	case PPU_REG_MASK: {
@@ -217,6 +223,14 @@ void TickPPU(PPU* ppu)
 	UpdateVblankFlag(ppu);
 	if(ppu->renderBg)
 		UpdateV(ppu);
+
+	// Vblank kezdetén:
+	if (ppu->ppuDotX == 0 && ppu->ppuDotY == 240) {
+		ppu->endOfFrame = true; // ez az SDL/emuláció loop miatt fontos, hogy tudjunk frissíteni kijelzőt 60hz-ben
+		
+		if(ppu->nmiEnabled)
+			ppu->generateNMI = true; // a konzol generáljon egy NMI interruptot, ha engedélyezve van
+	}
 
 	// következő ppu pont beállítása
 	ppu->ppuDotX++;

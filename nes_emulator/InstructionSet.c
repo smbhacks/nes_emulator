@@ -363,7 +363,6 @@ void DoJMP(CPU* cpu, Opcode* opcode)
 // a stack 0x100 és 0x1FF között van
 void PushToStack(CPU* cpu, uint8_t val)
 {
-	
 	cpu->memory[0x100 + cpu->s] = val;
 	cpu->s -= 1;
 }

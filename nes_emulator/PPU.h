@@ -64,6 +64,9 @@ typedef struct PPU {
 	// Ettől a PPU $2007 olvasása mindig 1 olvasással késik, ezért a játékok egy dummy olvasást csinálnak az address beállítása után
 	uint8_t PPUReadBuff; 
 
+	bool generateNMI;
+	bool endOfFrame;
+
 	uint8_t oamDmaPage; // OAM DMA esetén a CPU-ban ezen a "page"-en lévő adatot másoljuk a PPU OAMjába
 
 	// belső regiszterek (https://www.nesdev.org/wiki/PPU_scrolling#PPU_internal_registers)
