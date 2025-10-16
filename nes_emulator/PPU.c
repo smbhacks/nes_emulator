@@ -94,11 +94,11 @@ void WritingToPPUReg(PPU* ppu, uint16_t reg, uint8_t value)
 	case PPU_REG_ADDR: {
 		if (!ppu->secondWrite)
 		{
-			ppu->t.value = (ppu->t.value & 0b11111111) + (value & 0b00111111) << 8;
+			ppu->t.value = (ppu->t.value & 0b11111111) + ((value & 0b00111111) << 8);
 		}
 		else
 		{
-			ppu->t.value = (ppu->t.value & 0b11111100000000) + value;
+			ppu->t.value = (ppu->t.value & 0b111111100000000) + value;
 
 			ppu->v = ppu->t;
 		}
