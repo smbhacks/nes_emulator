@@ -20,6 +20,20 @@ void DestroyPPU(PPU* ppu)
 	free(ppu->oam);
 }
 
+// used for debugging purposes
+void PutRGBAtPPUDot(PPU* ppu, uint8_t r, uint8_t g, uint8_t b)
+{
+	int x = ppu->ppuDotX - 1;
+	int y = ppu->ppuDotY;
+	if (x < 256 && y < 240 && y > -1)
+	{
+		uint8_t* pixel = ppu->display + y * 256 * 3 + x * 3;
+		pixel[0] = r;
+		pixel[1] = g;
+		pixel[2] = b;
+	}
+}
+
 void WritingToPPUReg(PPU* ppu, uint16_t reg, uint8_t value)
 {
 	switch (reg)
@@ -162,6 +176,8 @@ void IncHoriV(PPU* ppu)
 		// 2: 0x2800 bal 2
 		// 3: 0x2c00 jobb 2
 		ppu->v.nametableSelect ^= 1;
+
+//	PutRGBAtPPUDot(ppu, 255, 0, 0); // debug
 }
 
 void IncVertV(PPU* ppu)
@@ -238,6 +254,7 @@ void DrawPPUDot(PPU* ppu)
 	// tile cím megszerzése
 	uint16_t tileValueAddressOnNam = PPU_MEM_NAMETABLES_START + ppu->v.coarseX + (ppu->v.coarseY << 5) + PPU_MEM_NAMETABLE_SIZE * ppu->v.nametableSelect;
 	uint8_t tileValue = ppu->memory[tileValueAddressOnNam];
+	//uint8_t tileValue = 0x30 + ppu->v.coarseX;
 	uint16_t tileAddress = tileValue * 0x10;
 	if (ppu->bgSecondPatternSelected)
 		tileAddress += 0x1000;
@@ -267,6 +284,10 @@ void DrawPPUDot(PPU* ppu)
 // https://www.nesdev.org/w/images/default/4/4f/Ppu.svg
 void TickPPU(PPU* ppu)
 {
+	// jelenlegi ppu pont rajzolása
+	if (1 <= ppu->ppuDotX && ppu->ppuDotX <= 256 && 0 <= ppu->ppuDotY && ppu->ppuDotY <= 239)
+		DrawPPUDot(ppu);
+
 	// flagek updatelése 
 	UpdateSprite0Flag(ppu);
 	UpdateVblankFlag(ppu);
@@ -280,11 +301,6 @@ void TickPPU(PPU* ppu)
 		if(ppu->nmiEnabled)
 			ppu->generateNMI = true; // a konzol generáljon egy NMI interruptot, ha engedélyezve van
 	}
-
-	// jelenlegi ppu pont rajzolása
-	if(1 <= ppu->ppuDotX && ppu->ppuDotX <= 256 && 0 <= ppu->ppuDotY && ppu->ppuDotY <= 239)
-		DrawPPUDot(ppu);
-
 	// következő ppu pont beállítása
 	ppu->ppuDotX++;
 	if (ppu->ppuDotX >= 340)
