@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
 
     NES nes = CreateNES();
     nes.cpu.ppu = &nes.ppu;
-    SetCartNES(&nes, "nestest.nes");
+    SetCartNES(&nes, "ld.nes");
     ResetNES(&nes);
 
     // SDL Texture létrehozása, amit majd a renderer megjelenít

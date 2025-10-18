@@ -65,7 +65,7 @@ uint16_t GetPCOfAddressing(CPU* cpu, int addressingMode, bool checkPageCrossEnab
 	case indirect_indexed: {
 		if (LOG_CPU) { sprintf(cpu->logBuff, "($%02X),y", cpu->memory[cpu->PC]); LogCPU(cpu); }
 		uint8_t low = cpu->memory[cpu->memory[cpu->PC]];
-		uint8_t high = cpu->memory[cpu->memory[(cpu->memory[cpu->PC] + 1) % 256]];
+		uint8_t high = cpu->memory[(cpu->memory[cpu->PC] + 1) % 256];
 		uint16_t examinedPC = low + 256 * high + cpu->y;
 		if (checkPageCrossEnabled) CheckPageCross(cpu, examinedPC);
 		cpu->PC++;
