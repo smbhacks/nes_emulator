@@ -32,8 +32,7 @@ uint8_t ReadingFromControllerReg(Controller* controller)
 			break;
 		}
 		case CONTROLLER_BIT_OF_DOWN: {
-			//value = controller->down;
-			value = 1;
+			value = controller->down;
 			break;
 		}
 		case CONTROLLER_BIT_OF_LEFT: {

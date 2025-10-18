@@ -579,12 +579,14 @@ void DoROL(CPU* cpu, Opcode* opcode)
 {
 	uint8_t* operand = GetRegOrAddrOperand(cpu, opcode, false);
 	// Carry flag beállítása bit 7-re
+	int newCarry;
 	if (*operand >= 128)
-		cpu->c = 1;
+		newCarry = 1;
 	else
-		cpu->c = 0;
+		newCarry = 0;
 	*operand *= 2;
 	*operand += cpu->c; // c -> 0. bit
+	cpu->c = newCarry;
 	SetZeroFlag(cpu, *operand);
 	SetNegativeFlag(cpu, *operand);
 }
@@ -593,12 +595,14 @@ void DoROR(CPU* cpu, Opcode* opcode)
 {
 	uint8_t* operand = GetRegOrAddrOperand(cpu, opcode, false);
 	// Carry flag beállítása bit 0-ra
+	int newCarry;
 	if (*operand & 0b1)
-		cpu->c = 1;
+		newCarry = 1;
 	else
-		cpu->c = 0;
+		newCarry = 0;
 	*operand /= 2;
 	*operand += (cpu->c << 7); // c -> 7. bit
+	cpu->c = newCarry;
 	SetZeroFlag(cpu, *operand);
 	cpu->n = 0;
 }
