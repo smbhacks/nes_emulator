@@ -1,6 +1,7 @@
 // 6502 CPU
 #pragma once
 #include <stdint.h>
+#include <stdio.h>
 #include "InstructionSet.h"
 #include "AddressingEnum.h"
 #include <stdbool.h>
@@ -30,6 +31,9 @@ typedef struct CPU {
     int currentCycleTimeInFrame;
 
     PPU* ppu; // a CPU-->PPU között van vezeték, a CPU memóriájában vannak regiszterek (pl 0x2000), amikkel lehet a PPU-val kommunikálni
+
+    FILE* logFile;
+    char logBuff[128];
 } CPU;
 
 void CreateOpcodes();

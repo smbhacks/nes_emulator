@@ -4,7 +4,7 @@
 
 #include "NES.h"
 
-const int WINDOW_SIZE = 3;
+const int WINDOW_SIZE = 2;
 const int FPS = 60;
 
 /*void UpdateDisplayTexture(PPU* ppu, SDL_Texture* texture, int numLoops)

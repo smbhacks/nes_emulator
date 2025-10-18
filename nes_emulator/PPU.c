@@ -252,7 +252,8 @@ void DrawPPUDot(PPU* ppu)
 	int y = ppu->ppuDotY;
 
 	// tile cím megszerzése
-	uint16_t tileValueAddressOnNam = PPU_MEM_NAMETABLES_START + ppu->v.coarseX + (ppu->v.coarseY << 5) + PPU_MEM_NAMETABLE_SIZE * ppu->v.nametableSelect;
+	// itt azért vonok ki 2-őt a végéből, mert az NES az első 2 oszlop grafikáját az előző scanline láthatatlan részén fetcheli
+	uint16_t tileValueAddressOnNam = PPU_MEM_NAMETABLES_START + ppu->v.coarseX + (ppu->v.coarseY << 5) + PPU_MEM_NAMETABLE_SIZE * ppu->v.nametableSelect - 2;
 	uint8_t tileValue = ppu->memory[tileValueAddressOnNam];
 	//uint8_t tileValue = 0x30 + ppu->v.coarseX;
 	uint16_t tileAddress = tileValue * 0x10;

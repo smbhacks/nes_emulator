@@ -1,5 +1,11 @@
 #include "CPU.h"
 
+void LogCPU(CPU* cpu)
+{
+    printf(cpu->logBuff);
+    fputs(cpu->logBuff, cpu->logFile);
+}
+
 CPU CreateCPU()
 {
     CPU cpu;
@@ -9,6 +15,10 @@ CPU CreateCPU()
 
     // opkódok "betöltése"
     CreateOpcodes();
+
+    if (LOG_CPU) {
+        cpu.logFile = fopen("log.txt", "w");
+    }
 
     return cpu;
 }
@@ -22,8 +32,10 @@ int TickCPU(CPU *cpu)
     cpu->PC++;
 
     if (LOG_CPU) {
-        printf("%04X    ", cpu->PC);
-        printf("%s ", InstructionString[opcode.instruction]);
+        sprintf(cpu->logBuff, "%04X    ", cpu->PC-1);
+        LogCPU(cpu);
+        sprintf(cpu->logBuff, "%s ", InstructionString[opcode.instruction]);
+        LogCPU(cpu);
     }
 
     opcode.doInstructionFn(cpu, &opcode);
@@ -38,7 +50,8 @@ int TickCPU(CPU *cpu)
         processorFlags += (cpu->d << 3);
         processorFlags += (cpu->v << 6);
         processorFlags += (cpu->n << 7);
-        printf("\t\t\tA:%02X X:%02X Y:%02X P:%02X SP:%02X Cyc:%d CycInFrame:%d\n", cpu->a, cpu->x, cpu->y, processorFlags, cpu->s, cpu->currentCycleTime, cpu->currentCycleTimeInFrame);
+        sprintf(cpu->logBuff, "\t\t\tA:%02X X:%02X Y:%02X P:%02X SP:%02X Cyc:%d CycInFrame:%d\n", cpu->a, cpu->x, cpu->y, processorFlags, cpu->s, cpu->currentCycleTime, cpu->currentCycleTimeInFrame);
+        LogCPU(cpu);
     }
 
     if (cpu->ppu->generateNMI) {
