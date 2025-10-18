@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include "PPU.h"
 
-#define LOG_CPU false
+#define LOG_CPU true
 
 typedef struct CPU {
     // 32 kb memória 
