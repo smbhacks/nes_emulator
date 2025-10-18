@@ -2,7 +2,7 @@
 
 void LogCPU(CPU* cpu)
 {
-    printf(cpu->logBuff);
+    //printf(cpu->logBuff);
     fputs(cpu->logBuff, cpu->logFile);
 }
 

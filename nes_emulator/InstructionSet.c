@@ -607,40 +607,42 @@ void DoROR(CPU* cpu, Opcode* opcode)
 	cpu->n = 0;
 }
 
-void DoTransferOpcode(CPU* cpu, uint8_t *from, uint8_t *to)
+void DoTransferOpcode(CPU* cpu, uint8_t *from, uint8_t *to, bool setFlags)
 {
 	*to = *from;
 
-	SetZeroFlag(cpu, *to);
-	SetNegativeFlag(cpu, *to);
+	if (setFlags) {
+		SetZeroFlag(cpu, *to);
+		SetNegativeFlag(cpu, *to);
+	}
 }
 
 void DoTAX(CPU* cpu, Opcode* opcode)
 {
-	DoTransferOpcode(cpu, &cpu->a, &cpu->x);
+	DoTransferOpcode(cpu, &cpu->a, &cpu->x, true);
 }
 
 void DoTAY(CPU* cpu, Opcode* opcode)
 {
-	DoTransferOpcode(cpu, &cpu->a, &cpu->y);
+	DoTransferOpcode(cpu, &cpu->a, &cpu->y, true);
 }
 
 void DoTSX(CPU* cpu, Opcode* opcode)
 {
-	DoTransferOpcode(cpu, &cpu->s, &cpu->x);
+	DoTransferOpcode(cpu, &cpu->s, &cpu->x, true);
 }
 
 void DoTXA(CPU* cpu, Opcode* opcode)
 {
-	DoTransferOpcode(cpu, &cpu->x, &cpu->a);
+	DoTransferOpcode(cpu, &cpu->x, &cpu->a, true);
 }
 
 void DoTXS(CPU* cpu, Opcode* opcode)
 {
-	DoTransferOpcode(cpu, &cpu->x, &cpu->s);
+	DoTransferOpcode(cpu, &cpu->x, &cpu->s, false);
 }
 
 void DoTYA(CPU* cpu, Opcode* opcode)
 {
-	DoTransferOpcode(cpu, &cpu->y, &cpu->a);
+	DoTransferOpcode(cpu, &cpu->y, &cpu->a, true);
 }

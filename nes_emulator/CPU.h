@@ -229,7 +229,7 @@ static const struct {
     {0xc0, {CPY, immediate,         2, &DoCPY}},
     {0xc4, {CPY, zeropage,          3, &DoCPY}},
     {0xcc, {CPY, absolute,          4, &DoCPY}},
-    {0xc6, {DEC, absolute,          5, &DoDEC}},
+    {0xc6, {DEC, zeropage,          5, &DoDEC}},
     {0xd6, {DEC, zeropage_x,        6, &DoDEC}},
     {0xce, {DEC, absolute,          6, &DoDEC}},
     {0xde, {DEC, absolute_x,        7, &DoDEC}},
