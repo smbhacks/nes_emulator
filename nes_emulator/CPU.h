@@ -7,8 +7,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "PPU.h"
+#include "Controller.h"
 
-#define LOG_CPU false
+#define LOG_CPU true
 
 typedef struct CPU {
     // 32 kb memória 
@@ -30,7 +31,9 @@ typedef struct CPU {
     int currentCycleTime; // azért van itt, hogy az instructionSet is tudja módosítani
     int currentCycleTimeInFrame;
 
-    PPU* ppu; // a CPU-->PPU között van vezeték, a CPU memóriájában vannak regiszterek (pl 0x2000), amikkel lehet a PPU-val kommunikálni
+    // cpu tud kommunikálni ezekkel:
+    PPU* ppu;
+    Controller* controller;
 
     FILE* logFile;
     char logBuff[128];

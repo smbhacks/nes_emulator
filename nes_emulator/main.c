@@ -49,7 +49,8 @@ int main(int argc, char* argv[]) {
 
     NES nes = CreateNES();
     nes.cpu.ppu = &nes.ppu;
-    SetCartNES(&nes, "ld.nes");
+    nes.cpu.controller = &nes.controller;
+    SetCartNES(&nes, "nestest.nes");
     ResetNES(&nes);
 
     // SDL Texture létrehozása, amit majd a renderer megjelenít
@@ -74,6 +75,20 @@ int main(int argc, char* argv[]) {
                 break;
             }
         }
+
+        // https://wiki.libsdl.org/SDL2/SDL_GetKeyboardState
+        // Azt írja, hogy kéne SDL_PumpEvents() ezelőtt, de a PollEvent már meghívja amúgy is, szóval nem kell mégegyszer
+        // 1-et ad, ha le van nyomva, 0-t ha nincs.
+        // Ez tökéletes lesz az 1-bites kontroller változokhoz
+        uint8_t* keyStates = SDL_GetKeyboardState(NULL);
+        nes.controller.a      = keyStates[SDL_SCANCODE_C];
+        nes.controller.b      = keyStates[SDL_SCANCODE_X];
+        nes.controller.select = keyStates[SDL_SCANCODE_SPACE];
+        nes.controller.start  = keyStates[SDL_SCANCODE_RETURN];
+        nes.controller.up     = keyStates[SDL_SCANCODE_UP];
+        nes.controller.down   = keyStates[SDL_SCANCODE_DOWN];
+        nes.controller.left   = keyStates[SDL_SCANCODE_LEFT];
+        nes.controller.right  = keyStates[SDL_SCANCODE_RIGHT];
 
         int tmp;
         SDL_LockTexture(displayTexture, NULL, &nes.ppu.display, &tmp);

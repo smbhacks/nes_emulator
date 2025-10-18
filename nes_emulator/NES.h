@@ -2,11 +2,13 @@
 #include "CPU.h"
 #include "PPU.h"
 #include "Cart.h"
+#include "Controller.h"
 
 typedef struct NES {
 	CPU cpu;
 	PPU ppu;
 	Cart cart;
+	Controller controller;
 } NES;
 
 NES CreateNES();

@@ -1,6 +1,7 @@
 #include "InstructionSet.h"
 #include "CPU.h"
 #include "PPU.h"
+#include "Controller.h"
 
 // https://www.nesdev.org/wiki/Instruction_reference
 
@@ -463,6 +464,8 @@ void DoLoadOpcode(CPU* cpu, Opcode* opcode, uint8_t* reg)
 
 	if (addr / 256 == 0x20)
 		*reg = ReadingFromPPUReg(cpu->ppu, addr);
+	else if (addr == CONTROLLER_REG_4016)
+		*reg = ReadingFromControllerReg(cpu->controller);
 	else
 		*reg = cpu->memory[addr];
 
@@ -491,6 +494,8 @@ void DoStoreOpcode(CPU* cpu, Opcode* opcode, uint8_t value)
 
 	if (addr / 256 == 0x20)
 		WritingToPPUReg(cpu->ppu, addr, value);
+	else if (addr == CONTROLLER_REG_4016)
+		WritingToControllerReg(cpu->controller, value);
 	else
 		cpu->memory[addr] = value;
 }

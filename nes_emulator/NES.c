@@ -6,6 +6,7 @@ NES CreateNES()
 
 	nes.cpu = CreateCPU();
 	nes.ppu = CreatePPU();
+	nes.controller = CreateController();
 
 	//nes.cpu.ppu = &nes.ppu; // EZ ITT NEM JÓ, MERT A VEREMRE KERÜLT PPU TÖRLÉSRE KERÜL A FÜGGVÉNY UTÁN, ÉS EZ A POINTER ROSSZ CÍMRE MUTAT
 
