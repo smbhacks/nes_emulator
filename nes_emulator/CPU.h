@@ -9,7 +9,7 @@
 #include "PPU.h"
 #include "Controller.h"
 
-#define LOG_CPU true
+#define LOG_CPU false
 
 typedef struct CPU {
     // 32 kb memória 
