@@ -18,7 +18,7 @@
 #define PPU_REG_SCROLL    0x2005
 #define PPU_REG_ADDR      0x2006
 #define PPU_REG_DATA      0x2007
-#define PPU_REG_OAMDMA    0x4014
+#define PPU_REG_OAMDMA    0x4014 // nem itt van kezelve
 
 typedef struct PPU {
 	// 16 kb memória, amelyet a CPU tud manipulálni
@@ -66,7 +66,7 @@ typedef struct PPU {
 	bool generateNMI;
 	bool endOfFrame;
 
-	uint8_t oamDmaPage; // OAM DMA esetén a CPU-ban ezen a "page"-en lévő adatot másoljuk a PPU OAMjába
+	//uint8_t oamDmaPage; // OAM DMA esetén a CPU-ban ezen a "page"-en lévő adatot másoljuk a PPU OAMjába
 
 	// belső regiszterek (https://www.nesdev.org/wiki/PPU_scrolling#PPU_internal_registers)
 	union {
@@ -89,3 +89,4 @@ void DestroyPPU(PPU* ppu);
 void WritingToPPUReg(PPU* ppu, uint16_t reg, uint8_t value);
 uint8_t ReadingFromPPUReg(PPU* ppu, uint16_t reg);
 void TickPPU(PPU* ppu);
+void DrawSprites(PPU* ppu);

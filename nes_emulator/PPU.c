@@ -113,10 +113,6 @@ void WritingToPPUReg(PPU* ppu, uint16_t reg, uint8_t value)
 			ppu->v.value += 1;
 		break;
 	}
-	case PPU_REG_OAMDMA: {
-		ppu->oamDmaPage = value;
-		break;
-	}
 	default:
 		break;
 	}
@@ -159,9 +155,6 @@ uint8_t ReadingFromPPUReg(PPU* ppu, uint16_t reg)
 		else
 			ppu->v.value += 1;
 		return value;
-	}
-	case PPU_REG_OAMDMA: {
-		return 0;
 	}
 	default:
 		return 0;
@@ -250,6 +243,39 @@ uint8_t testPalette[] = {
 	0xff, 0xff, 0xff
 };
 
+int GetPixelColor(PPU* ppu, uint8_t tileValue, bool useSecondPattern, int x, int y)
+{
+	// address megszerzése
+	uint16_t tileAddress = tileValue * 0x10;
+	if (useSecondPattern)
+		tileAddress += 0x1000;
+
+	// tile-en belüli szín érték megszerzése
+	int pixelRowByteIndex = y % 8; // bájt érték
+	int pixelColBitIndex = x % 8; // bit érték
+	uint16_t pixelRowAddress = tileAddress + pixelRowByteIndex;
+	uint8_t pixelRowPlane1 = ppu->memory[pixelRowAddress + 0];
+	uint8_t pixelRowPlane2 = ppu->memory[pixelRowAddress + 8];
+	int pixelColorPlane1 = (pixelRowPlane1 & (0x80 >> pixelColBitIndex)) >> (7 - pixelColBitIndex);
+	int pixelColorPlane2 = (pixelRowPlane2 & (0x80 >> pixelColBitIndex)) >> (7 - pixelColBitIndex);
+
+	return pixelColorPlane1 + 2 * pixelColorPlane2;
+}
+
+void DrawPixel(PPU* ppu, uint8_t paletteValue, int pixelColor, int x, int y)
+{
+	// pixel szín értékhez paletta hozzárendelés
+	uint8_t r = palettes[3 * paletteValue + 0];
+	uint8_t g = palettes[3 * paletteValue + 1];
+	uint8_t b = palettes[3 * paletteValue + 2];
+
+	// rajzolás
+	uint8_t* pixel = ppu->display + y * 256 * 3 + x * 3;
+	pixel[0] = r;
+	pixel[1] = g;
+	pixel[2] = b;
+}
+
 void DrawPPUDot(PPU* ppu)
 {
 	int x = ppu->ppuDotX - 1;
@@ -266,20 +292,7 @@ void DrawPPUDot(PPU* ppu)
 	}
 
 	uint8_t tileValue = ppu->memory[tileValueAddressOnNam];
-	//uint8_t tileValue = 0x30 + ppu->v.coarseX;
-	uint16_t tileAddress = tileValue * 0x10;
-	if (ppu->bgSecondPatternSelected)
-		tileAddress += 0x1000;
-
-	// tile-en belüli szín érték megszerzése
-	int pixelRowByteIndex = y % 8; // bájt érték
-	int pixelColBitIndex = ((x % 8) + ppu->fineX) % 8; // bit érték
-	uint16_t pixelRowAddress = tileAddress + pixelRowByteIndex;
-	uint8_t pixelRowPlane1 = ppu->memory[pixelRowAddress+0];
-	uint8_t pixelRowPlane2 = ppu->memory[pixelRowAddress+8];
-	int pixelColorPlane1 = (pixelRowPlane1 & (0x80 >> pixelColBitIndex)) >> (7 - pixelColBitIndex);
-	int pixelColorPlane2 = (pixelRowPlane2 & (0x80 >> pixelColBitIndex)) >> (7 - pixelColBitIndex);
-	int pixelColor = pixelColorPlane1 + 2 * pixelColorPlane2;
+	int pixelColor = GetPixelColor(ppu, tileValue, ppu->bgSecondPatternSelected, (x % 8) + ppu->fineX, y);
 
 	// attribute chunk (2x2 metatilera van, minden metatile-ra jut 2 bit)
 	// 1 metatile = 2x2 tile
@@ -291,16 +304,7 @@ void DrawPPUDot(PPU* ppu)
 	int paletteIndex = (attributeByte & (0b11 << attrBitLoc)) >> attrBitLoc;
 	int paletteValue = ppu->memory[PPU_MEM_PALETTES_START + 4 * paletteIndex + pixelColor];
 
-	// pixel szín értékhez paletta hozzárendelés
-	uint8_t r = palettes[3 * paletteValue + 0];
-	uint8_t g = palettes[3 * paletteValue + 1];
-	uint8_t b = palettes[3 * paletteValue + 2];
-
-	// rajzolás
-	uint8_t* pixel = ppu->display + y * 256 * 3 + x * 3;
-	pixel[0] = r;
-	pixel[1] = g;
-	pixel[2] = b;
+	DrawPixel(ppu, paletteValue, pixelColor, x, y);
 }
 
 // https://www.nesdev.org/w/images/default/4/4f/Ppu.svg
@@ -333,6 +337,46 @@ void TickPPU(PPU* ppu)
 		{
 			ppu->ppuDotY = -1;
 		}
+	}
+}
+
+void DrawOneSprite(PPU* ppu, uint8_t spriteX, uint8_t spriteY, uint8_t spriteTile, uint8_t spriteAttributes)
+{
+	for (int y = 0; y < 8; y++)
+	{
+		if (spriteY + y >= 240)
+			break; // ha túlmentünk y irányban a képernyőn, akkor már végeztünk ezzel a sprite-tal
+
+		for (int x = 0; x < 8; x++)
+		{
+			if (spriteX + x >= 256)
+				break; // ha túlmentünk x irányban a képernyőn, akkor végeztünk ezzel a sorral
+
+			int xToDraw = spriteAttributes & 0x40 ? 7 - x : x; // horizontális flip, ha az attribute 6.-ik bitje 1
+			int yToDraw = spriteAttributes & 0x80 ? 7 - y : y; // vertikális flip, ha az attribute 7.-ik bitje 1
+			int pixelColor = GetPixelColor(ppu, spriteTile, ppu->spritesSecondPatternSelected, xToDraw, yToDraw);
+			if (pixelColor != 0)
+			{
+				// rajzoljuk, ha nem egy átlátszó pixel
+				int paletteIndex = spriteAttributes & 0b11;
+				int paletteValue = ppu->memory[PPU_MEM_PALETTES_START + 4 * paletteIndex + pixelColor + 0x10];
+				DrawPixel(ppu, paletteValue, pixelColor, spriteX + x, spriteY + y);
+			}
+		}
+	}
+}
+
+// https://www.nesdev.org/wiki/PPU_OAM
+void DrawSprites(PPU* ppu)
+{
+	// oam-t rajzolja
+	for (int i = 0; i < 0x100; i += 4)
+	{
+		uint8_t spriteY			 = ppu->oam[i + 0] + 1; // +1 mert a valóságban a PPU 1 scanline-nal később rajzolná
+ 		uint8_t spriteTile		 = ppu->oam[i + 1];
+		uint8_t spriteAttributes = ppu->oam[i + 2];
+		uint8_t spriteX			 = ppu->oam[i + 3];
+		DrawOneSprite(ppu, spriteX, spriteY, spriteTile, spriteAttributes);
 	}
 }
 

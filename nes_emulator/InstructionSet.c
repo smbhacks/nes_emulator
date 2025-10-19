@@ -495,12 +495,23 @@ void DoLDY(CPU* cpu, Opcode* opcode)
 	DoLoadOpcode(cpu, opcode, &cpu->y);
 }
 
+void DoOamDma(CPU* cpu, PPU* ppu, uint8_t page)
+{
+	for (int i = 0; i < 0x100; i++)
+	{
+		ppu->oam[i] = cpu->memory[256 * page + i];
+	}
+	cpu->currentCycleTime += 513; //OAM DMA alatt megvan állítva a CPU. Ez kb 513 cycle
+}
+
 void DoStoreOpcode(CPU* cpu, Opcode* opcode, uint8_t value)
 {
 	uint16_t addr = GetPCOfAddressing(cpu, opcode->addressingMode, false);
 
 	if (addr / 256 == 0x20)
 		WritingToPPUReg(cpu->ppu, addr, value);
+	else if (addr == PPU_REG_OAMDMA)
+		DoOamDma(cpu, cpu->ppu, value);
 	else if (addr == CONTROLLER_REG_4016)
 		WritingToControllerReg(cpu->controller, value);
 	else
