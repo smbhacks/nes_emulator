@@ -44,7 +44,7 @@ uint8_t ReadingFromControllerReg(Controller* controller)
 			break;
 		}
 		default: {
-			value = 1;
+			value = 0;
 			break;
 		}
 	}

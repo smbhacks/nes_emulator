@@ -471,7 +471,7 @@ void DoLoadOpcode(CPU* cpu, Opcode* opcode, uint8_t* reg)
 
 	if (addr / 256 == 0x20)
 		*reg = ReadingFromPPUReg(cpu->ppu, addr);
-	else if (addr == CONTROLLER_REG_4016)
+	else if (addr == CONTROLLER_REG_4016 || addr == CONTROLLER_REG_4017)
 		*reg = ReadingFromControllerReg(cpu->controller);
 	else
 		*reg = cpu->memory[addr];
