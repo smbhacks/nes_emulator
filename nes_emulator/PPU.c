@@ -154,6 +154,10 @@ uint8_t ReadingFromPPUReg(PPU* ppu, uint16_t reg)
 		// több részlet PPU.h-ban a PPU struct-ban
 		uint8_t value = ppu->PPUReadBuff;
 		ppu->PPUReadBuff = ppu->memory[ppu->v.value];
+		if (ppu->vram32Increment)
+			ppu->v.value += 32;
+		else
+			ppu->v.value += 1;
 		return value;
 	}
 	case PPU_REG_OAMDMA: {
@@ -277,10 +281,20 @@ void DrawPPUDot(PPU* ppu)
 	int pixelColorPlane2 = (pixelRowPlane2 & (0x80 >> pixelColBitIndex)) >> (7 - pixelColBitIndex);
 	int pixelColor = pixelColorPlane1 + 2 * pixelColorPlane2;
 
+	// attribute chunk (2x2 metatilera van, minden metatile-ra jut 2 bit)
+	// 1 metatile = 2x2 tile
+	uint8_t attributeByte = ppu->memory[0x3c0 + (tileValueAddressOnNam & 0xfc00) + (tileValueAddressOnNam % 32) / 4 + ((tileValueAddressOnNam & 0x380) >> 4)];
+	//(jobb also << 6) | (bal also << 4) | (jobb felso << 2) | (bal felso << 0)
+	int aX = tileValueAddressOnNam & 0b10 ? 2 : 0;
+	int aY = tileValueAddressOnNam & 0x40 ? 4 : 0;
+	int attrBitLoc = aX + aY;
+	int paletteIndex = (attributeByte & (0b11 << attrBitLoc)) >> attrBitLoc;
+	int paletteValue = ppu->memory[PPU_MEM_PALETTES_START + 4 * paletteIndex + pixelColor];
+
 	// pixel szín értékhez paletta hozzárendelés
-	uint8_t r = testPalette[3 * pixelColor + 0];
-	uint8_t g = testPalette[3 * pixelColor + 1];
-	uint8_t b = testPalette[3 * pixelColor + 2];
+	uint8_t r = palettes[3 * paletteValue + 0];
+	uint8_t g = palettes[3 * paletteValue + 1];
+	uint8_t b = palettes[3 * paletteValue + 2];
 
 	// rajzolás
 	uint8_t* pixel = ppu->display + y * 256 * 3 + x * 3;
