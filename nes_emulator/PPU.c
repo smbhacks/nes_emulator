@@ -81,7 +81,7 @@ void WritingToPPUReg(PPU* ppu, uint16_t reg, uint8_t value)
 		if (!ppu->secondWrite)
 		{
 			ppu->t.coarseX = (value >> 3);
-			ppu->x = value & 0b111;
+			ppu->fineX = value & 0b111;
 		}
 		else
 		{
@@ -252,7 +252,7 @@ void DrawPPUDot(PPU* ppu)
 	int y = ppu->ppuDotY;
 
 	// tile cím megszerzése
-	uint16_t tileValueAddressOnNam = PPU_MEM_NAMETABLES_START + ppu->v.coarseX + (ppu->v.coarseY << 5) + PPU_MEM_NAMETABLE_SIZE * ppu->v.nametableSelect;
+	uint16_t tileValueAddressOnNam = PPU_MEM_NAMETABLES_START + ppu->v.coarseX + (ppu->v.coarseY << 5) + PPU_MEM_NAMETABLE_SIZE * ppu->v.nametableSelect + (((x % 8) + ppu->fineX) / 8);
 	// itt azért vonok ki 2-őt a végéből, mert az NES az első 2 oszlop grafikáját az előző scanline láthatatlan részén fetcheli
 	tileValueAddressOnNam -= 2;
 	if ((tileValueAddressOnNam & 0x1f) >= 0x1e) {
@@ -269,7 +269,7 @@ void DrawPPUDot(PPU* ppu)
 
 	// tile-en belüli szín érték megszerzése
 	int pixelRowByteIndex = y % 8; // bájt érték
-	int pixelColBitIndex = x % 8; // bit érték
+	int pixelColBitIndex = ((x % 8) + ppu->fineX) % 8; // bit érték
 	uint16_t pixelRowAddress = tileAddress + pixelRowByteIndex;
 	uint8_t pixelRowPlane1 = ppu->memory[pixelRowAddress+0];
 	uint8_t pixelRowPlane2 = ppu->memory[pixelRowAddress+8];
