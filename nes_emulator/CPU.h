@@ -9,7 +9,7 @@
 #include "PPU.h"
 #include "Controller.h"
 
-#define LOG_CPU false
+#define LOG_CPU true
 
 typedef struct CPU {
     // 32 kb memória 
@@ -322,7 +322,7 @@ static const struct {
     {0x96, {STX, zeropage_y,        4, &DoSTX}},
     {0x8e, {STX, absolute,          4, &DoSTX}},
     {0x84, {STY, zeropage,          3, &DoSTY}},
-    {0x94, {STY, zeropage_y,        4, &DoSTY}},
+    {0x94, {STY, zeropage_x,        4, &DoSTY}},
     {0x8c, {STY, absolute,          4, &DoSTY}},
     {0xaa, {TAX, none,              2, &DoTAX}},
     {0xa8, {TAY, none,              2, &DoTAY}},

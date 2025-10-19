@@ -65,6 +65,7 @@ void ResetNES(NES *nes)
 
 	// ugrás a reset rutinra, amelynek címe CPU:FFFC-nél van
 	nes->cpu.PC = nes->cpu.memory[0xFFFC] + 256 * nes->cpu.memory[0xFFFD];
+	//nes->cpu.PC = 0xC5F5;
 	nes->cpu.currentCycleTimeInFrame = 7;
 }
 

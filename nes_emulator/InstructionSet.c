@@ -85,7 +85,7 @@ uint8_t GetValueWithAddressing(CPU* cpu, int addressingMode, bool checkPageCross
 	return cpu->memory[address];
 }
 
-void SetZeroFlag(CPU* cpu, int val)
+void SetZeroFlag(CPU* cpu, uint8_t val)
 {
 	if (val == 0)
 		cpu->z = 1;
@@ -93,7 +93,7 @@ void SetZeroFlag(CPU* cpu, int val)
 		cpu->z = 0;
 }
 
-void SetOverflowFlag(CPU* cpu, int a, int m, int result)
+void SetOverflowFlag(CPU* cpu, uint8_t a, uint8_t m, uint8_t result)
 {
 	if ((result ^ a) & (result ^ m) & 0x80)
 		cpu->v = 1;
@@ -101,7 +101,7 @@ void SetOverflowFlag(CPU* cpu, int a, int m, int result)
 		cpu->v = 0;
 }
 
-void SetNegativeFlag(CPU* cpu, int val)
+void SetNegativeFlag(CPU* cpu, uint8_t val)
 {
 	if (val >= 128)
 		cpu->n = 1;
@@ -116,15 +116,15 @@ void DoIllegal()
 
 void DoADC(CPU* cpu, Opcode* opcode)
 {
-	uint8_t operand = GetValueWithAddressing(cpu, opcode->addressingMode, true) + cpu->c;
-	int result = operand + cpu->a;
-	cpu->a = result % 256;
+	uint8_t operand = GetValueWithAddressing(cpu, opcode->addressingMode, true);
+	int result = operand + cpu->a + cpu->c;
 	if (result > 255)
 		cpu->c = 1;
 	else
 		cpu->c = 0;
-	SetZeroFlag(cpu, cpu->a);
 	SetOverflowFlag(cpu, cpu->a, operand, result);
+	cpu->a = result % 256;
+	SetZeroFlag(cpu, cpu->a);
 	SetNegativeFlag(cpu, cpu->a);
 }
 
@@ -134,13 +134,13 @@ void DoSBC(CPU* cpu, Opcode* opcode)
 
 	uint8_t operand = GetValueWithAddressing(cpu, opcode->addressingMode, true);
 	int result = cpu->a - operand - (1 - cpu->c); 
-	cpu->a = result % 256;
 	if (result < 0)
 		cpu->c = 0;
 	else
 		cpu->c = 1;
-	SetZeroFlag(cpu, cpu->a);
 	SetOverflowFlag(cpu, cpu->a, ~operand, result);
+	cpu->a = result % 256;
+	SetZeroFlag(cpu, cpu->a);
 	SetNegativeFlag(cpu, cpu->a);
 }
 
@@ -225,11 +225,12 @@ void DoBRK(CPU* cpu, Opcode* opcode)
 
 void DoBIT(CPU* cpu, Opcode* opcode)
 {
-	uint8_t value_to_test = GetValueWithAddressing(cpu, opcode->addressingMode, false);
-	SetZeroFlag(cpu, value_to_test);
-	SetNegativeFlag(cpu, value_to_test);
+	uint8_t value = GetValueWithAddressing(cpu, opcode->addressingMode, false);
+	uint8_t result = cpu->a & value;
+	SetZeroFlag(cpu, result);
+	SetNegativeFlag(cpu, value);
 	// overflow flag = 6. bit
-	if (value_to_test & 0b01000000)
+	if (value & 0b01000000)
 		cpu->v = 1;
 	else
 		cpu->v = 0;
@@ -357,10 +358,13 @@ void DoJMP(CPU* cpu, Opcode* opcode)
 		// addressingMode az indirekt JMP ($xxxx)
 		// itt van egy 6502 bug, ha $xxxx = $xxFF, mert abban az esetben 
 		// a PC $xxFF-t és $xx00-t olvassa. Pl JMP ($03ff) az új PC értékét $03ff-ból és $0300-ból kapja.
-		loOfNewPC = cpu->memory[cpu->memory[cpu->PC]];
-		if (++cpu->PC % 256 == 0) // a bug emulálása
-			cpu->PC -= 256;
-		hiOfNewPC = cpu->memory[cpu->memory[cpu->PC]];
+		uint8_t lo = cpu->memory[cpu->PC+0];
+		uint8_t hi = cpu->memory[cpu->PC+1];
+		uint16_t vectorAddr = lo + 256 * hi;
+		loOfNewPC = cpu->memory[vectorAddr+0];
+		if ((vectorAddr & 0x00FF) == 0xFF) // bug emulálása
+			vectorAddr -= 256;
+		hiOfNewPC = cpu->memory[vectorAddr+1];
 	}
 	cpu->PC = loOfNewPC + 256 * hiOfNewPC;
 }
@@ -390,7 +394,7 @@ void DoPHP(CPU* cpu, Opcode* opcode)
 	processorFlags += (cpu->z << 1);
 	processorFlags += (cpu->i << 2);
 	processorFlags += (cpu->d << 3);
-	processorFlags += (0b11   << 5);
+	processorFlags += (0b11   << 4);
 	processorFlags += (cpu->v << 6);
 	processorFlags += (cpu->n << 7);
 	PushToStack(cpu, processorFlags);
@@ -399,6 +403,9 @@ void DoPHP(CPU* cpu, Opcode* opcode)
 void DoPLA(CPU* cpu, Opcode* opcode)
 {
 	cpu->a = PopFromStack(cpu);
+
+	SetNegativeFlag(cpu, cpu->a);
+	SetZeroFlag(cpu, cpu->a);
 }
 
 int IsBitOn(int value, int bit)
@@ -604,7 +611,7 @@ void DoROR(CPU* cpu, Opcode* opcode)
 	*operand += (cpu->c << 7); // c -> 7. bit
 	cpu->c = newCarry;
 	SetZeroFlag(cpu, *operand);
-	cpu->n = 0;
+	SetNegativeFlag(cpu, *operand);
 }
 
 void DoTransferOpcode(CPU* cpu, uint8_t *from, uint8_t *to, bool setFlags)
