@@ -81,6 +81,10 @@ typedef struct PPU {
 	uint8_t fineX; //3-bit, finom X scroll
 	bool secondWrite; //1-bit, ezzel különbözteti meg ugyanazon a regiszteren érkező A és B értéket (w)
 
+	// hol rajzoltuk a sprite0 első pixelét
+	int sprite0_X; 
+	int sprite0_Y;
+
 	uint8_t* display;
 } PPU;
 

@@ -236,13 +236,6 @@ void UpdateSprite0Flag(PPU* ppu)
 		ppu->sprite0Flag = 0;
 }
 
-uint8_t testPalette[] = {
-	0x00, 0x00, 0x00,
-	0x3f, 0x3f, 0x3f,
-	0x7f, 0x7f, 0x7f,
-	0xff, 0xff, 0xff
-};
-
 int GetPixelColor(PPU* ppu, uint8_t tileValue, bool useSecondPattern, int x, int y)
 {
 	// address megszerzése
@@ -327,6 +320,13 @@ void TickPPU(PPU* ppu)
 		if(ppu->nmiEnabled)
 			ppu->generateNMI = true; // a konzol generáljon egy NMI interruptot, ha engedélyezve van
 	}
+
+	// állítjuk be a sprite0 flaget, ha sikerült rajzolni
+	if (ppu->ppuDotX > ppu->sprite0_X && ppu->ppuDotY >= (ppu->sprite0_Y-1))
+	{
+		ppu->sprite0Flag = true;
+	}
+
 	// következő ppu pont beállítása
 	ppu->ppuDotX++;
 	if (ppu->ppuDotX >= 340)
@@ -340,7 +340,7 @@ void TickPPU(PPU* ppu)
 	}
 }
 
-void DrawOneSprite(PPU* ppu, uint8_t spriteX, uint8_t spriteY, uint8_t spriteTile, uint8_t spriteAttributes)
+void DrawOneSprite(PPU* ppu, uint8_t spriteX, uint8_t spriteY, uint8_t spriteTile, uint8_t spriteAttributes, bool isSprite0)
 {
 	for (int y = 0; y < 8; y++)
 	{
@@ -360,7 +360,14 @@ void DrawOneSprite(PPU* ppu, uint8_t spriteX, uint8_t spriteY, uint8_t spriteTil
 				// rajzoljuk, ha nem egy átlátszó pixel
 				int paletteIndex = spriteAttributes & 0b11;
 				int paletteValue = ppu->memory[PPU_MEM_PALETTES_START + 4 * paletteIndex + pixelColor + 0x10];
-				DrawPixel(ppu, paletteValue, pixelColor, spriteX + x, spriteY + y);
+				int displayX = spriteX + x;
+				int displayY = spriteY + y;
+				DrawPixel(ppu, paletteValue, pixelColor, displayX, displayY);
+				if (isSprite0)
+				{
+					ppu->sprite0_X = displayX;
+					ppu->sprite0_Y = displayY;
+				}
 			}
 		}
 	}
@@ -376,7 +383,7 @@ void DrawSprites(PPU* ppu)
  		uint8_t spriteTile		 = ppu->oam[i + 1];
 		uint8_t spriteAttributes = ppu->oam[i + 2];
 		uint8_t spriteX			 = ppu->oam[i + 3];
-		DrawOneSprite(ppu, spriteX, spriteY, spriteTile, spriteAttributes);
+		DrawOneSprite(ppu, spriteX, spriteY, spriteTile, spriteAttributes, i == 0);
 	}
 }
 
