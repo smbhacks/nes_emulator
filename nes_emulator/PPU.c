@@ -278,32 +278,64 @@ void DrawPixelWithPal(PPU* ppu, uint8_t paletteValue, int x, int y)
 	DrawPixel(ppu, x, y, r, g, b);
 }
 
+void SubFromNamX(uint16_t* addr, int x)
+{
+	int result = (*addr % 32) - x;
+	while (result < 0)
+	{
+		// és mozgassuk el az előző nametablebe
+		if ((*addr & 0xc00) != 0x000 && (*addr & 0xc00) != 0x800)
+			*addr -= 0x400;
+		else
+			*addr += 0x400; // a nametablet 3-ra állítjuk, ha 0.-on vagyunk most (0-tól számozva)
+
+		*addr += 0x20; // javítsuk meg az coarseY-et
+
+		result += 32;
+	}
+	*addr -= x;
+}
+
+void AddToNamX(uint16_t* addr, int x)
+{
+	int result = (*addr % 32) + x;
+	while (result >= 32)
+	{
+		// és mozgassuk el az következő nametablebe
+		if ((*addr & 0xc00) != 0x400 && (*addr & 0xc00) != 0xc00)
+			*addr += 0x400;
+		else
+			*addr -= 0x400;
+
+		*addr -= 0x20; // javítsuk meg az coarseY-et
+
+		result -= 32;
+	}
+	*addr += x;
+}
+
 void DrawPPUDot(PPU* ppu)
 {
 	int x = ppu->ppuDotX - 1;
 	int y = ppu->ppuDotY;
 
 	// tile cím megszerzése
-	uint16_t tileValueAddressOnNam = PPU_MEM_NAMETABLES_START + ppu->v.coarseX + (ppu->v.coarseY << 5) + PPU_MEM_NAMETABLE_SIZE * ppu->v.nametableSelect + (((x % 8) + ppu->fineX) / 8);
+	uint16_t addrOnNam = PPU_MEM_NAMETABLES_START + ppu->v.coarseX + (ppu->v.coarseY << 5) + PPU_MEM_NAMETABLE_SIZE * ppu->v.nametableSelect;
 	// itt azért vonok ki 2-őt a végéből, mert az NES az első 2 oszlop grafikáját az előző scanline láthatatlan részén fetcheli
-	tileValueAddressOnNam -= 2;
-	if ((tileValueAddressOnNam & 0x1f) >= 0x1e) {
-		// javitsuk meg, hogy ha az előző nametable-t kell használnunk
-		tileValueAddressOnNam += 0x20; // javítsuk meg az coarseY-et
-		tileValueAddressOnNam -= 0x400; // és mozgassuk el az előző nametablebe
-	}
+	SubFromNamX(&addrOnNam, 2);
+	AddToNamX(&addrOnNam, ((x % 8) + ppu->fineX) / 8);
 
-	uint8_t tileValue = ppu->memory[tileValueAddressOnNam];
+	uint8_t tileValue = ppu->memory[addrOnNam];
 	int pixelColor = GetPixelColor(ppu, tileValue, ppu->bgSecondPatternSelected, (x % 8) + ppu->fineX, y);
 
 	if (pixelColor != 0)
 	{
 		// attribute chunk (2x2 metatilera van, minden metatile-ra jut 2 bit)
 		// 1 metatile = 2x2 tile
-		uint8_t attributeByte = ppu->memory[0x3c0 + (tileValueAddressOnNam & 0xfc00) + (tileValueAddressOnNam % 32) / 4 + ((tileValueAddressOnNam & 0x380) >> 4)];
+		uint8_t attributeByte = ppu->memory[0x3c0 + (addrOnNam & 0xfc00) + (addrOnNam % 32) / 4 + ((addrOnNam & 0x380) >> 4)];
 		//(jobb also << 6) | (bal also << 4) | (jobb felso << 2) | (bal felso << 0)
-		int aX = tileValueAddressOnNam & 0b10 ? 2 : 0;
-		int aY = tileValueAddressOnNam & 0x40 ? 4 : 0;
+		int aX = addrOnNam & 0b10 ? 2 : 0;
+		int aY = addrOnNam & 0x40 ? 4 : 0;
 		int attrBitLoc = aX + aY;
 		int paletteIndex = (attributeByte & (0b11 << attrBitLoc)) >> attrBitLoc;
 		int paletteValue = ppu->memory[PPU_MEM_PALETTES_START + 4 * paletteIndex + pixelColor];
