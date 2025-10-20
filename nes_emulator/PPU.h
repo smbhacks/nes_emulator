@@ -94,3 +94,4 @@ void WritingToPPUReg(PPU* ppu, uint16_t reg, uint8_t value);
 uint8_t ReadingFromPPUReg(PPU* ppu, uint16_t reg);
 void TickPPU(PPU* ppu);
 void DrawSprites(PPU* ppu);
+void DrawBackgroundColor(PPU* ppu);

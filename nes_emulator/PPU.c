@@ -106,7 +106,11 @@ void WritingToPPUReg(PPU* ppu, uint16_t reg, uint8_t value)
 		break;
 	}
 	case PPU_REG_DATA: {
-		ppu->memory[ppu->v.value] = value;
+		if(ppu->v.value == 0x3f10)
+			ppu->memory[0x3f00] = value; // a 0x3f00 és 0x3f10 változtatja meg a háttérszínt
+		else
+			ppu->memory[ppu->v.value] = value; 
+
 		if (ppu->vram32Increment)
 			ppu->v.value += 32;
 		else
@@ -255,18 +259,23 @@ int GetPixelColor(PPU* ppu, uint8_t tileValue, bool useSecondPattern, int x, int
 	return pixelColorPlane1 + 2 * pixelColorPlane2;
 }
 
-void DrawPixel(PPU* ppu, uint8_t paletteValue, int pixelColor, int x, int y)
+void DrawPixel(PPU* ppu, int x, int y, uint8_t r, uint8_t g, uint8_t b)
+{
+	// rajzolás
+	uint8_t* pixel = ppu->display + y * 256 * 3 + x * 3;
+	pixel[0] = r;
+	pixel[1] = g;
+	pixel[2] = b;
+}
+
+void DrawPixelWithPal(PPU* ppu, uint8_t paletteValue, int x, int y)
 {
 	// pixel szín értékhez paletta hozzárendelés
 	uint8_t r = palettes[3 * paletteValue + 0];
 	uint8_t g = palettes[3 * paletteValue + 1];
 	uint8_t b = palettes[3 * paletteValue + 2];
 
-	// rajzolás
-	uint8_t* pixel = ppu->display + y * 256 * 3 + x * 3;
-	pixel[0] = r;
-	pixel[1] = g;
-	pixel[2] = b;
+	DrawPixel(ppu, x, y, r, g, b);
 }
 
 void DrawPPUDot(PPU* ppu)
@@ -287,17 +296,26 @@ void DrawPPUDot(PPU* ppu)
 	uint8_t tileValue = ppu->memory[tileValueAddressOnNam];
 	int pixelColor = GetPixelColor(ppu, tileValue, ppu->bgSecondPatternSelected, (x % 8) + ppu->fineX, y);
 
-	// attribute chunk (2x2 metatilera van, minden metatile-ra jut 2 bit)
-	// 1 metatile = 2x2 tile
-	uint8_t attributeByte = ppu->memory[0x3c0 + (tileValueAddressOnNam & 0xfc00) + (tileValueAddressOnNam % 32) / 4 + ((tileValueAddressOnNam & 0x380) >> 4)];
-	//(jobb also << 6) | (bal also << 4) | (jobb felso << 2) | (bal felso << 0)
-	int aX = tileValueAddressOnNam & 0b10 ? 2 : 0;
-	int aY = tileValueAddressOnNam & 0x40 ? 4 : 0;
-	int attrBitLoc = aX + aY;
-	int paletteIndex = (attributeByte & (0b11 << attrBitLoc)) >> attrBitLoc;
-	int paletteValue = ppu->memory[PPU_MEM_PALETTES_START + 4 * paletteIndex + pixelColor];
+	if (pixelColor != 0)
+	{
+		// attribute chunk (2x2 metatilera van, minden metatile-ra jut 2 bit)
+		// 1 metatile = 2x2 tile
+		uint8_t attributeByte = ppu->memory[0x3c0 + (tileValueAddressOnNam & 0xfc00) + (tileValueAddressOnNam % 32) / 4 + ((tileValueAddressOnNam & 0x380) >> 4)];
+		//(jobb also << 6) | (bal also << 4) | (jobb felso << 2) | (bal felso << 0)
+		int aX = tileValueAddressOnNam & 0b10 ? 2 : 0;
+		int aY = tileValueAddressOnNam & 0x40 ? 4 : 0;
+		int attrBitLoc = aX + aY;
+		int paletteIndex = (attributeByte & (0b11 << attrBitLoc)) >> attrBitLoc;
+		int paletteValue = ppu->memory[PPU_MEM_PALETTES_START + 4 * paletteIndex + pixelColor];
 
-	DrawPixel(ppu, paletteValue, pixelColor, x, y);
+		DrawPixelWithPal(ppu, paletteValue, x, y);
+	}
+	else
+	{
+		// ha átlátszó pixel, rajzoljunk magentát egyelőre 
+		// (hogy majd a spriteok tudják, hogy lehet-e az adott pixelen rajzolódni-e
+		DrawPixel(ppu, x, y, 255, 0, 255);
+	}
 }
 
 // https://www.nesdev.org/w/images/default/4/4f/Ppu.svg
@@ -340,6 +358,11 @@ void TickPPU(PPU* ppu)
 	}
 }
 
+bool isDisplayMagenta(PPU* ppu, int x, int y)
+{
+	return ppu->display[3 * (256 * y + x) + 0] == 255 && ppu->display[3 * (256 * y + x) + 1] == 0 && ppu->display[3 * (256 * y + x) + 2] == 255;
+}
+
 void DrawOneSprite(PPU* ppu, uint8_t spriteX, uint8_t spriteY, uint8_t spriteTile, uint8_t spriteAttributes, bool isSprite0)
 {
 	for (int y = 0; y < 8; y++)
@@ -362,7 +385,9 @@ void DrawOneSprite(PPU* ppu, uint8_t spriteX, uint8_t spriteY, uint8_t spriteTil
 				int paletteValue = ppu->memory[PPU_MEM_PALETTES_START + 4 * paletteIndex + pixelColor + 0x10];
 				int displayX = spriteX + x;
 				int displayY = spriteY + y;
-				DrawPixel(ppu, paletteValue, pixelColor, displayX, displayY);
+				bool behindBg = spriteAttributes & 0b00100000;
+				if(!behindBg || isDisplayMagenta(ppu, displayX, displayY))
+					DrawPixelWithPal(ppu, paletteValue, displayX, displayY);
 				if (isSprite0)
 				{
 					ppu->sprite0_X = displayX;
@@ -385,6 +410,15 @@ void DrawSprites(PPU* ppu)
 		uint8_t spriteX			 = ppu->oam[i + 3];
 		DrawOneSprite(ppu, spriteX, spriteY, spriteTile, spriteAttributes, i == 0);
 	}
+}
+
+void DrawBackgroundColor(PPU* ppu)
+{
+	uint8_t bgPal = ppu->memory[0x3f00];
+	for (int y = 0; y < 240; y++)
+		for (int x = 0; x < 256; x++)
+			if (isDisplayMagenta(ppu, x, y))
+				DrawPixelWithPal(ppu, bgPal, x, y);
 }
 
 // https://www.nesdev.org/wiki/File:2C02G_wiki.pal
