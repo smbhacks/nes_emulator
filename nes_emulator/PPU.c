@@ -434,7 +434,7 @@ void DrawOneSprite(PPU* ppu, uint8_t spriteX, uint8_t spriteY, uint8_t spriteTil
 void DrawSprites(PPU* ppu)
 {
 	// oam-t rajzolja
-	for (int i = 0; i < 0x100; i += 4)
+	for (int i = 0x100-4; i >= 0; i -= 4)
 	{
 		uint8_t spriteY			 = ppu->oam[i + 0] + 1; // +1 mert a valóságban a PPU 1 scanline-nal később rajzolná
  		uint8_t spriteTile		 = ppu->oam[i + 1];
