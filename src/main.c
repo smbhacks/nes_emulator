@@ -27,14 +27,14 @@ int main(int argc, char* argv[]) {
     NES nes = CreateNES();
     nes.cpu.ppu = &nes.ppu;
     nes.cpu.controller = &nes.controller;
-    SetCartNES(&nes, "ld.nes");
+    SetCartNES(&nes, "nestest.nes");
     ResetNES(&nes);
 
     // SDL Texture létrehozása, amit majd a renderer megjelenít
     SDL_Texture* displayTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, 256, 240);
 
     uint32_t timerStart, time;
-    const int MSPF = 1000 / FPS; //milliszekundumok száma egy frame-ben
+    const unsigned int MSPF = 1000 / FPS; //milliszekundumok száma egy frame-ben
     bool running = true;
     while (running)
     {

@@ -8,15 +8,20 @@ project "NES_Emulator"
     targetdir "bin/%{cfg.buildcfg}"
     files { "src/**.c", "src/**.h" }
 
-    buildoptions { "-Wall", "-Werror" }
-
     -- Header files
     includedirs { "lib/SDL2/include/SDL2" }
 
     -- Library folder
     libdirs { "lib/SDL2/lib" }
 
-    links { "SDL2" }
+    filter "action:gmake*"
+        buildoptions { "-Wall", "-Werror" }
+	links { "SDL2" }
+
+    filter "action:vs*"
+        defines { "_CRT_SECURE_NO_WARNINGS" }
+        buildoptions { "/W3", "/WX" }
+	links { "SDL2-static.lib", "SDL2main.lib" }
 
     filter "system:windows"
         defines { "SDL_STATIC", "SDL_MAIN_HANDLED" }
