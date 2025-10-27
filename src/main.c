@@ -7,29 +7,6 @@
 const int WINDOW_SIZE = 2;
 const int FPS = 60;
 
-/*void UpdateDisplayTexture(PPU* ppu, SDL_Texture* texture, int numLoops)
-{
-    void* pixelsPtr;
-    int bytesPerRow;
-    SDL_LockTexture(texture, NULL, &pixelsPtr, &bytesPerRow);
-
-    for (int y = 0; y < 240; y++)
-    {
-        for (int x = 0; x < 256; x++)
-        {
-            uint8_t r = x + numLoops;
-            uint8_t g = y + numLoops;
-            uint8_t b = numLoops;
-            uint8_t* pixel = (uint8_t*)pixelsPtr + y * bytesPerRow + x * 3;
-            pixel[0] = r;
-            pixel[1] = g;
-            pixel[2] = b;
-        }
-    }
-
-    SDL_UnlockTexture(texture);
-}*/
-
 int main(int argc, char* argv[]) {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         printf("SDL Init problema: %s", SDL_GetError());
@@ -59,7 +36,6 @@ int main(int argc, char* argv[]) {
     uint32_t timerStart, time;
     const int MSPF = 1000 / FPS; //milliszekundumok száma egy frame-ben
     bool running = true;
-    int numLoops = 0;
     while (running)
     {
         timerStart = SDL_GetTicks();
@@ -105,7 +81,6 @@ int main(int argc, char* argv[]) {
         {
             SDL_Delay(MSPF - time);
         }
-        numLoops++;
     }
 
     RemoveCartNES(&nes);
