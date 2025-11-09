@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <SDL.h>
 
-#include "NES.h"
+#include "core/NES.h"
 
 const int WINDOW_SIZE = 2;
 const int FPS = 60;
@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
     NES nes = CreateNES();
     nes.cpu.ppu = &nes.ppu;
     nes.cpu.controller = &nes.controller;
-    SetCartNES(&nes, "nestest.nes");
+    SetCartNES(&nes, "rom.nes");
     ResetNES(&nes);
 
     // SDL Texture létrehozása, amit majd a renderer megjelenít
