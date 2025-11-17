@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 #define CONTROLLER_REG_4016 0x4016 // kontroller 1
 #define CONTROLLER_REG_4017 0x4017 // kontroller 2
@@ -31,4 +33,5 @@ typedef struct Controller {
 
 uint8_t ReadingFromControllerReg(Controller* controller);
 void WritingToControllerReg(Controller* controller, uint8_t value); // csak CONTROLLER_REG_4016-re lehet írni
-Controller CreateController();
+Controller* CreateController();
+void FreeController(Controller* controller);

@@ -69,21 +69,34 @@ void LogCPU(CPU* cpu)
     fputs(cpu->logBuff, cpu->logFile);
 }
 
-CPU CreateCPU()
+CPU* CreateCPU()
 {
-    CPU cpu;
+    printf("Creating CPU...\n");
 
-    memset(&cpu, 0, sizeof(cpu)); // minden lenullázása
-    cpu.memory = malloc(0x10000); // 32kb memória (0000~FFFF)
+    CPU* cpu = malloc(sizeof(CPU));
+
+    memset(cpu, 0, sizeof(CPU)); // minden lenullázása
+    cpu->memory = malloc(0x10000); // 32kb memória (0000~FFFF)
 
     // opkódok "betöltése"
     CreateOpcodes();
 
     if (LOG_CPU) {
-        cpu.logFile = fopen("log.txt", "w");
+        cpu->logFile = fopen("log.txt", "w");
     }
 
     return cpu;
+}
+
+void FreeCPU(CPU* cpu)
+{
+    printf("Freeing CPU...\n");
+
+    free(cpu->memory);
+    if (LOG_CPU) {
+        fclose(cpu->logFile);
+    }
+    free(cpu);
 }
 
 int TickCPU(CPU *cpu)

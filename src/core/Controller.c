@@ -59,8 +59,16 @@ void WritingToControllerReg(Controller* controller, uint8_t value)
 	CheckStrobe(controller);
 }
 
-Controller CreateController()
+Controller* CreateController()
 {
-	Controller controller = {0};
+	printf("Creating Controller...\n");
+	Controller* controller = malloc(sizeof(Controller));
+	memset(controller, 0, sizeof(Controller));
 	return controller;
+}
+
+void FreeController(Controller* controller)
+{
+	printf("Freeing Controller...\n");
+	free(controller);
 }

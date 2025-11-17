@@ -41,7 +41,8 @@ typedef struct CPU {
 } CPU;
 
 void CreateOpcodes();
-CPU CreateCPU();
+CPU* CreateCPU();
+void FreeCPU(CPU* cpu);
 int TickCPU(CPU *cpu); // returns number of cycles
 
 enum Instruction

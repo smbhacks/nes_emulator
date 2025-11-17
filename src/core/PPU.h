@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #define PPU_MEM_PATTERN_TABLE_SIZE     0x1000
 #define PPU_MEM_PATTERN_TABLES_START   0x0000
@@ -89,8 +90,8 @@ typedef struct PPU {
 	uint8_t* display;
 } PPU;
 
-PPU CreatePPU();
-void DestroyPPU(PPU* ppu);
+PPU* CreatePPU();
+void FreePPU(PPU* ppu);
 void WritingToPPUReg(PPU* ppu, uint16_t reg, uint8_t value);
 uint8_t ReadingFromPPUReg(PPU* ppu, uint16_t reg);
 void TickPPU(PPU* ppu);

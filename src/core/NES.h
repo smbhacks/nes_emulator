@@ -5,13 +5,13 @@
 #include "Controller.h"
 
 typedef struct NES {
-	CPU cpu;
-	PPU ppu;
-	Cart cart;
-	Controller controller;
+	CPU* cpu;
+	PPU* ppu;
+	Cart* cart;
+	Controller* controller;
 } NES;
 
-NES CreateNES();
+NES* CreateNES();
 void SetCartNES(NES* nes, const char* path);
 void ResetNES(NES *nes);
 void TickNES(NES *nes);

@@ -24,11 +24,9 @@ int main(int argc, char* argv[]) {
     }
     SDL_RenderClear(renderer);
 
-    NES nes = CreateNES();
-    nes.cpu.ppu = &nes.ppu;
-    nes.cpu.controller = &nes.controller;
-    SetCartNES(&nes, "rom.nes");
-    ResetNES(&nes);
+    NES* nes = CreateNES();
+    SetCartNES(nes, "rom.nes");
+    ResetNES(nes);
 
     // SDL Texture létrehozása, amit majd a renderer megjelenít
     SDL_Texture* displayTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, 256, 240);
@@ -57,18 +55,18 @@ int main(int argc, char* argv[]) {
         // 1-et ad, ha le van nyomva, 0-t ha nincs.
         // Ez tökéletes lesz az 1-bites kontroller változokhoz
         const uint8_t* keyStates = SDL_GetKeyboardState(NULL);
-        nes.controller.a      = keyStates[SDL_SCANCODE_C];
-        nes.controller.b      = keyStates[SDL_SCANCODE_X];
-        nes.controller.select = keyStates[SDL_SCANCODE_SPACE];
-        nes.controller.start  = keyStates[SDL_SCANCODE_RETURN];
-        nes.controller.up     = keyStates[SDL_SCANCODE_UP];
-        nes.controller.down   = keyStates[SDL_SCANCODE_DOWN];
-        nes.controller.left   = keyStates[SDL_SCANCODE_LEFT];
-        nes.controller.right  = keyStates[SDL_SCANCODE_RIGHT];
+        nes->controller->a      = keyStates[SDL_SCANCODE_C];
+        nes->controller->b      = keyStates[SDL_SCANCODE_X];
+        nes->controller->select = keyStates[SDL_SCANCODE_SPACE];
+        nes->controller->start  = keyStates[SDL_SCANCODE_RETURN];
+        nes->controller->up     = keyStates[SDL_SCANCODE_UP];
+        nes->controller->down   = keyStates[SDL_SCANCODE_DOWN];
+        nes->controller->left   = keyStates[SDL_SCANCODE_LEFT];
+        nes->controller->right  = keyStates[SDL_SCANCODE_RIGHT];
 
         int tmp;
-        SDL_LockTexture(displayTexture, NULL, (void**)&nes.ppu.display, &tmp);
-        TickNES(&nes); // futtasuk az emulátort 1 frame-t
+        SDL_LockTexture(displayTexture, NULL, (void**)&nes->ppu->display, &tmp);
+        TickNES(nes); // futtasuk az emulátort 1 frame-t
         SDL_UnlockTexture(displayTexture);
 
         //UpdateDisplayTexture(&nes.ppu, displayTexture, numLoops);
@@ -83,8 +81,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    RemoveCartNES(&nes);
-    DestroyNES(&nes);
+    RemoveCartNES(nes);
+    DestroyNES(nes);
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

@@ -13,4 +13,5 @@ typedef struct Cart {
 	uint8_t *CHR;
 } Cart;
 
-Cart InsertCart(const char* path);
+Cart* InsertCart(const char* path);
+void FreeCart(Cart* cart);

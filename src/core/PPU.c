@@ -2,22 +2,27 @@
 
 uint8_t palettes[];
 
-PPU CreatePPU()
+PPU* CreatePPU()
 {
-	PPU ppu;
+	printf("Creating PPU...\n");
 
-	memset(&ppu, 0, sizeof(ppu));
-	ppu.memory = (uint8_t*)malloc(0x4000); // 16 kb 
-	ppu.oam = (uint8_t*)malloc(0x100); // 256 bájt
-	ppu.display = (uint8_t*)malloc(256 * 240 * 3); // RGB24 kijelző
+	PPU* ppu = malloc(sizeof(PPU));
+
+	memset(ppu, 0, sizeof(PPU));
+	ppu->memory = (uint8_t*)malloc(0x4000); // 16 kb 
+	ppu->oam = (uint8_t*)malloc(0x100); // 256 bájt
+	ppu->display = (uint8_t*)malloc(256 * 240 * 3); // RGB24 kijelző
 
 	return ppu;
 }
 
-void DestroyPPU(PPU* ppu)
+void FreePPU(PPU* ppu)
 {
+	printf("Freeing PPU...\n");
+
 	free(ppu->memory);
 	free(ppu->oam);
+	free(ppu);
 }
 
 // used for debugging purposes
