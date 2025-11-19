@@ -1,6 +1,13 @@
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#define CIMGUI_USE_OPENGL3
+#define CIMGUI_USE_SDL2
+#define CIMGUI_USE_GLFW
 #include <stdio.h>
 #include <stdbool.h>
 #include <SDL.h>
+#include "cimgui.h"
+#include "cimgui_impl.h"
+#include "GL/gl3w.h"
 
 #include "core/NES.h"
 
@@ -12,11 +19,44 @@ int main(int argc, char* argv[]) {
         printf("SDL Init problema: %s", SDL_GetError());
         return 1;
     }
-    SDL_Window* window = SDL_CreateWindow("NES emulátor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 256 * WINDOW_SIZE, 240 * WINDOW_SIZE, 0);
+
+    const char* glsl_version = "#version 130";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_DisplayMode current;
+    SDL_GetCurrentDisplayMode(0, &current);
+
+    SDL_Window* window = SDL_CreateWindow(
+        "NES emulátor", 
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
+        256 * WINDOW_SIZE, 240 * WINDOW_SIZE, 
+        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL
+    );
     if (window == NULL) {
         printf("Nem sikerult letrehozni az ablakot: %s", SDL_GetError());
         return 1;
     }
+    SDL_GLContext gl_context = SDL_GL_CreateContext(window);
+    SDL_GL_SetSwapInterval(1); //vsync
+
+    if(gl3wInit() != 0)
+    {
+        printf("Nem sikerult inicializalni az OpenGL Loadert!");
+        return 1;
+    }
+
+    igCreateContext(NULL);
+    ImGuiIO io = *igGetIO_Nil();
+    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
     if (renderer == NULL) {
         printf("Nem sikerult letrehozni a renderert: %s", SDL_GetError());
@@ -31,6 +71,12 @@ int main(int argc, char* argv[]) {
     // SDL Texture létrehozása, amit majd a renderer megjelenít
     SDL_Texture* displayTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, 256, 240);
 
+    ImVec4 clearColor;
+    clearColor.x = 0.45f;
+    clearColor.y = 0.55f;
+    clearColor.z = 0.60f;
+    clearColor.w = 1.00f;
+
     uint32_t timerStart, time;
     const unsigned int MSPF = 1000 / FPS; //milliszekundumok száma egy frame-ben
     bool running = true;
@@ -40,6 +86,7 @@ int main(int argc, char* argv[]) {
 
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
+            ImGui_ImplSDL2_ProcessEvent(&e);
             switch (e.type)
             {
             case SDL_QUIT:
@@ -49,6 +96,10 @@ int main(int argc, char* argv[]) {
                 break;
             }
         }
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        igNewFrame();
 
         // https://wiki.libsdl.org/SDL2/SDL_GetKeyboardState
         // Azt írja, hogy kéne SDL_PumpEvents() ezelőtt, de a PollEvent már meghívja amúgy is, szóval nem kell mégegyszer
@@ -68,10 +119,15 @@ int main(int argc, char* argv[]) {
         SDL_LockTexture(displayTexture, NULL, (void**)&nes->ppu->display, &tmp);
         TickNES(nes); // futtasuk az emulátort 1 frame-t
         SDL_UnlockTexture(displayTexture);
-
-        //UpdateDisplayTexture(&nes.ppu, displayTexture, numLoops);
         SDL_RenderCopy(renderer, displayTexture, NULL, NULL); // texture megjelenítése az egész képernyőn
-        SDL_RenderPresent(renderer);
+
+        igRender();
+        SDL_GL_MakeCurrent(window, gl_context);
+        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+        glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
+        SDL_GL_SwapWindow(window);
 
         // ha hamarabb befejezzük ezt a frame-t, mint MSPF, akkor várjuk meg (így elérjük a kívánt FPS-t)
         time = SDL_GetTicks() - timerStart;
@@ -84,6 +140,16 @@ int main(int argc, char* argv[]) {
     RemoveCartNES(nes);
     DestroyNES(nes);
 
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    igDestroyContext(NULL);
+    SDL_GL_DeleteContext(gl_context);
+    if (window != NULL)
+    {
+      SDL_DestroyWindow(window);
+      window = NULL;
+    }
+    
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
