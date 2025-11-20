@@ -1,6 +1,7 @@
 /bin
 /obj
 lib/cimgui/build/*
+lib/nativefiledialog/build/*
 Makefile
 *.make
 /.vs

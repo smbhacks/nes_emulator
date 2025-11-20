@@ -42,7 +42,12 @@ project "NES_Emulator"
 
     filter "system:linux"
         defines { "SDL_STATIC" }
-        links { "pthread", "dl", "m", "GL", "stdc++", "gtk" }
+        links { 
+            "pthread", "dl", "m", "GL", "stdc++",
+            "gtk-3",
+            "glib-2.0",
+            "gobject-2.0",
+        }
 
     filter "configurations:Debug"
         symbols "On"

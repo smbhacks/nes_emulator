@@ -118,6 +118,7 @@ int main(int argc, char* argv[]) {
         float menubarHeight = 0;
         if (igBeginMainMenuBar())
         {
+            menubarHeight = igGetWindowSize().y;
             if (igBeginMenu("File", true))
             {
                 if (igMenuItem_Bool("Open iNES file..", "Ctrl+O", false, true)) { 
@@ -125,20 +126,27 @@ int main(int argc, char* argv[]) {
                     nfdresult_t result = NFD_OpenDialog( NULL, NULL, &outPath );
                                 
                     if ( result == NFD_OKAY ) {
+                        RemoveCartNES(nes);
                         SetCartNES(nes, outPath);
                         ResetNES(nes);
                         free(outPath);
+                        SDL_SetWindowSize(window, 256 * WINDOW_SIZE, 240 * WINDOW_SIZE + menubarHeight);
                     }
                     else {
                         printf("Nem sikerult megnyitni a fajlt: %s\n", NFD_GetError() );
                     }
+                }
+                if (igMenuItem_Bool("Close ROM", "Ctrl+C", false, true)) { 
+                    RemoveCartNES(nes);              
+                }
+                if (igMenuItem_Bool("Reset", "Ctrl+R", false, true)) { 
+                    ResetNES(nes);
                 }
                 if (igMenuItem_Bool("Exit", "Alt+F4", false, true)) { 
                     running = false;
                 }
                 igEndMenu();
             }
-            menubarHeight = igGetWindowSize().y;
             igEndMainMenuBar();
         }
 
@@ -146,7 +154,6 @@ int main(int argc, char* argv[]) {
         glViewport(0, 0, (int)io->DisplaySize.x, (int)io->DisplaySize.y);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        SDL_SetWindowSize(window, 256 * WINDOW_SIZE, 240 * WINDOW_SIZE + menubarHeight);
         SDL_RenderClear(renderer);
         SDL_Rect dst = {
             0, menubarHeight, 256*WINDOW_SIZE, 240*WINDOW_SIZE
