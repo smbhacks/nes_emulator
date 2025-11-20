@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <SDL.h>
-#include "cimgui.h"
-#include "cimgui_impl.h"
-#include "GL/gl3w.h"
+#include <cimgui.h>
+#include <cimgui_impl.h>
+#include <GL/gl3w.h>
 
 #include "core/NES.h"
 
@@ -33,6 +33,9 @@ int main(int argc, char* argv[]) {
     SDL_DisplayMode current;
     SDL_GetCurrentDisplayMode(0, &current);
 
+    igCreateContext(NULL);
+    ImGuiIO* io = igGetIO_Nil();
+
     SDL_Window* window = SDL_CreateWindow(
         "NES emulátor", 
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
@@ -52,8 +55,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    igCreateContext(NULL);
-    ImGuiIO* io = igGetIO_Nil();
     io->IniFilename = NULL; 
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
     ImGui_ImplOpenGL3_Init(glsl_version);
@@ -115,12 +116,30 @@ int main(int argc, char* argv[]) {
         TickNES(nes); // futtasuk az emulátort 1 frame-t
         SDL_UnlockTexture(displayTexture);
 
+        float menubarHeight = 0;
+        if (igBeginMainMenuBar())
+        {
+            if (igBeginMenu("File", true))
+            {
+                if (igMenuItem_Bool("Open..", "Ctrl+O", false, true)) { /* Do stuff */ }
+                if (igMenuItem_Bool("Save", "Ctrl+S", false, true))   { /* Do stuff */ }
+                if (igMenuItem_Bool("Close", "Ctrl+W", false, true))  {  }
+                igEndMenu();
+            }
+            menubarHeight = igGetWindowSize().y;
+            igEndMainMenuBar();
+        }
+
         SDL_GL_MakeCurrent(window, gl_context);
         glViewport(0, 0, (int)io->DisplaySize.x, (int)io->DisplaySize.y);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        SDL_SetWindowSize(window, 256 * WINDOW_SIZE, 240 * WINDOW_SIZE + menubarHeight);
         SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, displayTexture, NULL, NULL);
+        SDL_Rect dst = {
+            0, menubarHeight, 256*WINDOW_SIZE, 240*WINDOW_SIZE
+        };
+        SDL_RenderCopy(renderer, displayTexture, NULL, &dst);        
 
         igRender();
         ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
