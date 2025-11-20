@@ -4,6 +4,7 @@ workspace "NES_Emulator"
     language "C"
 
 include "lib/cimgui"
+include "lib/nativefiledialog"
 
 project "NES_Emulator"
     kind "ConsoleApp"
@@ -21,17 +22,18 @@ project "NES_Emulator"
         "lib/cimgui/submodule",
         "lib/cimgui/submodule/imgui",
         "lib/cimgui/submodule/imgui/backends",
-        "lib/gl3w/include"
+        "lib/gl3w/include",
+        "lib/nativefiledialog/submodule/src/include"
     }
 
     libdirs {
-        "lib/SDL2/lib",
-        "lib/cimgui/submodule/build/bin/%{cfg.platform}/%{cfg.buildcfg}"
+        "lib/SDL2/lib"
     }
 
     links { 
         "cimgui", 
-        "SDL2"
+        "SDL2",
+        "nativefiledialog"
     }
 
     filter "system:windows"
@@ -40,7 +42,7 @@ project "NES_Emulator"
 
     filter "system:linux"
         defines { "SDL_STATIC" }
-        links { "pthread", "dl", "m", "GL", "stdc++" }
+        links { "pthread", "dl", "m", "GL", "stdc++", "gtk" }
 
     filter "configurations:Debug"
         symbols "On"

@@ -8,6 +8,7 @@
 #include <cimgui.h>
 #include <cimgui_impl.h>
 #include <GL/gl3w.h>
+#include <nfd.h>
 
 #include "core/NES.h"
 
@@ -120,7 +121,17 @@ int main(int argc, char* argv[]) {
             if (igBeginMenu("File", true))
             {
                 if (igMenuItem_Bool("Open iNES file..", "Ctrl+O", false, true)) { 
-                    
+                    nfdchar_t *outPath = NULL;
+                    nfdresult_t result = NFD_OpenDialog( NULL, NULL, &outPath );
+                                
+                    if ( result == NFD_OKAY ) {
+                        SetCartNES(nes, outPath);
+                        ResetNES(nes);
+                        free(outPath);
+                    }
+                    else {
+                        printf("Nem sikerult megnyitni a fajlt: %s\n", NFD_GetError() );
+                    }
                 }
                 if (igMenuItem_Bool("Exit", "Alt+F4", false, true)) { 
                     running = false;

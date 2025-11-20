@@ -4,3 +4,6 @@
 [submodule "lib/gl3w"]
 	path = lib/gl3w
 	url = https://github.com/skaslev/gl3w.git
+[submodule "lib/nativefiledialog/submodule"]
+	path = lib/nativefiledialog/submodule
+	url = https://github.com/mlabbe/nativefiledialog.git
