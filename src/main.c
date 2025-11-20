@@ -67,8 +67,6 @@ int main(int argc, char* argv[]) {
     SDL_RenderClear(renderer);
 
     NES* nes = CreateNES();
-    SetCartNES(nes, "rom.nes");
-    ResetNES(nes);
 
     // SDL Texture létrehozása, amit majd a renderer megjelenít
     SDL_Texture* displayTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, 256, 240);
@@ -121,9 +119,12 @@ int main(int argc, char* argv[]) {
         {
             if (igBeginMenu("File", true))
             {
-                if (igMenuItem_Bool("Open..", "Ctrl+O", false, true)) { /* Do stuff */ }
-                if (igMenuItem_Bool("Save", "Ctrl+S", false, true))   { /* Do stuff */ }
-                if (igMenuItem_Bool("Close", "Ctrl+W", false, true))  {  }
+                if (igMenuItem_Bool("Open iNES file..", "Ctrl+O", false, true)) { 
+                    
+                }
+                if (igMenuItem_Bool("Exit", "Alt+F4", false, true)) { 
+                    running = false;
+                }
                 igEndMenu();
             }
             menubarHeight = igGetWindowSize().y;

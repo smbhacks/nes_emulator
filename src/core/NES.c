@@ -13,12 +13,18 @@ NES* CreateNES()
     nes->cpu->ppu = nes->ppu;
     nes->cpu->controller = nes->controller;
 
+	nes->cartInserted = false;
+
 	return nes;
 }
 
 void RemoveCartNES(NES* nes)
 {
-	FreeCart(nes->cart);
+	if(nes->cartInserted) 
+	{
+		FreeCart(nes->cart);
+		nes->cartInserted = false;
+	}
 }
 
 void DestroyNES(NES* nes)
@@ -34,6 +40,7 @@ void DestroyNES(NES* nes)
 void SetCartNES(NES* nes, const char* path)
 {
 	nes->cart = InsertCart(path);
+	nes->cartInserted = true;
 }
 
 void ResetNES(NES *nes)
@@ -76,6 +83,9 @@ void ResetNES(NES *nes)
 
 void TickNES(NES *nes)
 {
+	if(!nes->cartInserted)
+		return;
+
 	nes->ppu->endOfFrame = false;
 	while (!nes->ppu->endOfFrame)
 	{

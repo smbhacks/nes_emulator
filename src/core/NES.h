@@ -9,6 +9,8 @@ typedef struct NES {
 	PPU* ppu;
 	Cart* cart;
 	Controller* controller;
+
+	bool cartInserted;
 } NES;
 
 NES* CreateNES();
