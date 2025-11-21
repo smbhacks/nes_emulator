@@ -22,6 +22,8 @@
 #define PPU_REG_DATA      0x2007
 #define PPU_REG_OAMDMA    0x4014 // nem itt van kezelve
 
+typedef struct Cart Cart;
+
 typedef struct PPU {
 	// 16 kb memória, amelyet a CPU tud manipulálni
 	uint8_t* memory; 
@@ -90,6 +92,8 @@ typedef struct PPU {
 	uint8_t* display; // 256*240 RGB24 buffer, amelyet a core futtatónak kell legfoglalnia
 	uint8_t* palette; // 64xRGB24 palettára mutató
 	bool using_default_palette; // ha ez true, akkor a core egy konstanst palette tömbre mutat, a futtatónak meg nem kell foglalkoznia a paletta biztosításával
+
+	Cart* cart;
 } PPU;
 
 PPU* CreatePPU();

@@ -9,3 +9,7 @@ void MMC3_Write(CPU* cpu, uint16_t address)
 {
 
 }
+uint8_t MMC3_CHR(PPU* ppu, uint16_t address)
+{
+
+}

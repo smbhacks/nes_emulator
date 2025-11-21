@@ -47,6 +47,7 @@ void CreateOpcodes();
 CPU* CreateCPU();
 void FreeCPU(CPU* cpu);
 int TickCPU(CPU *cpu); // returns number of cycles
+uint8_t ReadCpuMem(CPU* cpu, uint16_t address);
 
 enum Instruction
 {

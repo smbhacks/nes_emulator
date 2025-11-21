@@ -1,4 +1,5 @@
 #include "NES.h"
+#include "CPU.h"
 
 NES* CreateNES()
 {
@@ -51,6 +52,7 @@ void SetCartNES(NES* nes, const char* path)
 	if (nes->cartInserted = nes->cart != NULL)
 	{
 		nes->cpu->cart = nes->cart;
+		nes->ppu->cart = nes->cart;
 	}
 }
 
@@ -62,6 +64,7 @@ void ResetNES(NES *nes)
 	nes->cpu->s -= 3;
 	nes->cpu->i = 1;
 
+	/*
 	// mapper specifikus inicializálás itt. az enyém csak NROM-ot fogad
 	// NROM esetén ha 16kb PRG van, akkor azt CPU:8000~BFFF és CPU:C000~FFFF-re rakja. 32kb esetén CPU:8000~FFFF
 	// PRG:
@@ -88,9 +91,10 @@ void ResetNES(NES *nes)
 			nes->ppu->memory[i] = nes->cart->CHR[i];
 		}
 	}
+	*/
 
 	// ugrás a reset rutinra, amelynek címe CPU:FFFC-nél van
-	nes->cpu->PC = nes->cpu->memory[0xFFFC] + 256 * nes->cpu->memory[0xFFFD];
+	nes->cpu->PC = ReadCpuMem(nes->cpu, 0xFFFC) + 256 * ReadCpuMem(nes->cpu, 0xFFFC);
 	//nes->cpu.PC = 0xC5F5;
 	nes->cpu->currentCycleTimeInFrame = 7;
 }

@@ -1,5 +1,6 @@
 #include "PPU.h"
 #include "Palette.h"
+#include "Mapper.h"
 
 PPU* CreatePPU()
 {
@@ -170,7 +171,7 @@ uint8_t ReadingFromPPUReg(PPU* ppu, uint16_t reg)
 	case PPU_REG_DATA: {
 		// több részlet PPU.h-ban a PPU struct-ban
 		uint8_t value = ppu->PPUReadBuff;
-		ppu->PPUReadBuff = ppu->memory[ppu->v.value];
+		ppu->PPUReadBuff = ReadChrMemViaMapper(ppu, ppu->v.value);
 		if (ppu->vram32Increment)
 			ppu->v.value += 32;
 		else
@@ -268,8 +269,8 @@ int GetPixelColor(PPU* ppu, uint8_t tileValue, bool useSecondPattern, int x, int
 	int pixelRowByteIndex = y % 8; // bájt érték
 	int pixelColBitIndex = x % 8; // bit érték
 	uint16_t pixelRowAddress = tileAddress + pixelRowByteIndex;
-	uint8_t pixelRowPlane1 = ppu->memory[pixelRowAddress + 0];
-	uint8_t pixelRowPlane2 = ppu->memory[pixelRowAddress + 8];
+	uint8_t pixelRowPlane1 = ReadChrMemViaMapper(ppu, pixelRowAddress + 0);
+	uint8_t pixelRowPlane2 = ReadChrMemViaMapper(ppu, pixelRowAddress + 8);
 	int pixelColorPlane1 = (pixelRowPlane1 & (0x80 >> pixelColBitIndex)) >> (7 - pixelColBitIndex);
 	int pixelColorPlane2 = (pixelRowPlane2 & (0x80 >> pixelColBitIndex)) >> (7 - pixelColBitIndex);
 

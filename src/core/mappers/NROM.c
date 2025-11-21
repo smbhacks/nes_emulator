@@ -16,3 +16,7 @@ void NROM_Write(CPU* cpu, uint16_t address)
 {
 	// nincs mappelve semmi!
 }
+uint8_t NROM_CHR(PPU* ppu, uint16_t address)
+{
+	return ppu->cart->CHR[address];
+}
