@@ -32,21 +32,28 @@ project "NES_Emulator"
 
     links { 
         "cimgui", 
-        "SDL2",
+--        "SDL2",
         "nativefiledialog"
     }
 
     filter "system:windows"
-        defines { "SDL_STATIC", "SDL_MAIN_HANDLED" }
-        links { "user32", "gdi32", "winmm", "imm32", "ole32", "oleaut32", "version", "uuid", "setupapi", "opengl32" }
+        defines { "SDL_STATIC", "SDL_MAIN_HANDLED", "_CRT_SECURE_NO_WARNINGS" }
+        links { 
+            "user32", "gdi32", "winmm", "imm32", "ole32", "oleaut32", "version", "uuid", "setupapi", "opengl32",
+            "SDL2-static.lib", "SDL2main.lib"
+        }
+
 
     filter "system:linux"
         defines { "SDL_STATIC" }
         links { 
             "pthread", "dl", "m", "GL", "stdc++",
+
             "gtk-3",
             "glib-2.0",
             "gobject-2.0",
+
+            "SDL2"
         }
 
     filter "configurations:Debug"

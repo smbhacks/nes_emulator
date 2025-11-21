@@ -26,15 +26,25 @@ project "cimgui"
         "IMGUI_IMPL_OPENGL_LOADER_GL3W"
     }
 
+    libdirs {
+        "../SDL2/lib"
+    }
+
     filter "system:windows"
         systemversion "latest"
         staticruntime "On"
         defines { "IMGUI_IMPL_API=extern \"C\" __declspec(dllexport)" }
-        links { "SDL2-static", "opengl32" }
+        links { 
+            "opengl32",
+            "SDL2-static.lib", "SDL2main.lib" 
+        }
 
     filter "system:linux"
         defines { "IMGUI_IMPL_API=extern \"C\"" }
-        links { "SDL2", "GL", "pthread", "dl", "m" }
+        links { 
+            "SDL2", 
+            "GL", "pthread", "dl", "m" 
+        }
 
     filter "configurations:Debug"
         symbols "On"
