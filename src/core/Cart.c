@@ -19,6 +19,14 @@ Cart* InsertCart(const char* path)
 	cart->CHR_size = iNES[5] * 0x2000;
 	cart->nametableArrangement = iNES[6] & 0b1;
 
+	uint8_t mapperNumber = (iNES[7] & 0xF0) | (iNES[6] >> 4);
+	Mapper mapper = GetMapper(mapperNumber, &cart->internalMapperNum);
+	if (mapper == UNKNOWN_MAPPER)
+	{
+		printf("Nem tamogatott mappert hasznal ez a ROM\n");
+		return NULL;
+	}
+
 	// .nes: a fejléc után következik a PRG adat
 	cart->PRG = (uint8_t*)malloc(cart->PRG_size);
 	if(fread(cart->PRG, cart->PRG_size, 1, cartFile) != 1)

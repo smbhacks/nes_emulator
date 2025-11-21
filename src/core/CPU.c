@@ -85,6 +85,8 @@ CPU* CreateCPU()
         cpu->logFile = fopen("log.txt", "w");
     }
 
+    cpu->cart = NULL;
+
     return cpu;
 }
 
@@ -99,12 +101,20 @@ void FreeCPU(CPU* cpu)
     free(cpu);
 }
 
+uint8_t ReadCpuMem(CPU* cpu, uint16_t address)
+{
+    if (address < 0x2000)
+        return cpu->memory[address & 0x7ff];
+
+    return ReadCpuMemViaMapper(cpu, address);
+}
+
 int TickCPU(CPU *cpu)
 {
     cpu->currentCycleTime = 0;
 
     // egy opkódot végrehajtása
-    Opcode opcode = opcodes[cpu->memory[cpu->PC]];
+    Opcode opcode = opcodes[ReadCpuMem(cpu, cpu->PC)];
     cpu->PC++;
 
     if (LOG_CPU) {
@@ -134,7 +144,7 @@ int TickCPU(CPU *cpu)
         PushToStack(cpu, cpu->PC / 256); //magas PC
         PushToStack(cpu, cpu->PC % 256); //alacsony PC
         DoPHP(cpu, NULL); // processor flagek
-        uint16_t nmiVector = cpu->memory[0xFFFA] + 256*cpu->memory[0xFFFB]; // A CPU-ban a 0xFFFA-nál található az NMI címe
+        uint16_t nmiVector = ReadCpuMem(cpu, 0xFFFA) + 256 * ReadCpuMem(cpu, 0xFFFB); // A CPU-ban a 0xFFFA-nál található az NMI címe
         cpu->PC = nmiVector;
         cpu->ppu->generateNMI = false;
     }

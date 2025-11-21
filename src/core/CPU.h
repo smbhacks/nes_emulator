@@ -9,6 +9,7 @@
 #include "AddressingEnum.h"
 #include "PPU.h"
 #include "Controller.h"
+#include "Cart.h"
 
 #define LOG_CPU false
 
@@ -35,9 +36,11 @@ typedef struct CPU {
     // cpu tud kommunikálni ezekkel:
     PPU* ppu;
     Controller* controller;
+    Cart* cart;
 
     FILE* logFile;
     char logBuff[128];
+
 } CPU;
 
 void CreateOpcodes();

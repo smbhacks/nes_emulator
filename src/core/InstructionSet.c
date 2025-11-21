@@ -19,56 +19,56 @@ uint16_t GetPCOfAddressing(CPU* cpu, int addressingMode, bool checkPageCrossEnab
 	{
 	case relative:
 	case immediate: {
-		if (LOG_CPU) { sprintf(cpu->logBuff, "#$%02X", cpu->memory[cpu->PC]); LogCPU(cpu); }
+		if (LOG_CPU) { sprintf(cpu->logBuff, "#$%02X", ReadCpuMem(cpu, cpu->PC)); LogCPU(cpu); }
 		return cpu->PC++;
 	}
 	case zeropage: {
-		if (LOG_CPU) { sprintf(cpu->logBuff, "$%02X", cpu->memory[cpu->PC]); LogCPU(cpu); }
-		return cpu->memory[cpu->PC++];
+		if (LOG_CPU) { sprintf(cpu->logBuff, "$%02X", ReadCpuMem(cpu, cpu->PC)); LogCPU(cpu); }
+		return ReadCpuMem(cpu, cpu->PC++);
 	}
 	case absolute: {
-		if (LOG_CPU) { sprintf(cpu->logBuff, "$%02X%02X", cpu->memory[cpu->PC+1], cpu->memory[cpu->PC]); LogCPU(cpu); }
-		uint8_t low = cpu->memory[cpu->PC++];
-		uint8_t high = cpu->memory[cpu->PC++];
+		if (LOG_CPU) { sprintf(cpu->logBuff, "$%02X%02X", ReadCpuMem(cpu, cpu->PC+1), ReadCpuMem(cpu, cpu->PC)); LogCPU(cpu); }
+		uint8_t low = ReadCpuMem(cpu, cpu->PC++);
+		uint8_t high = ReadCpuMem(cpu, cpu->PC++);
 		return low + 256 * high;
 	}
 	case zeropage_x: {
-		if (LOG_CPU) { sprintf(cpu->logBuff, "$%02X,x", cpu->memory[cpu->PC]); LogCPU(cpu); }
-		return (cpu->memory[cpu->PC++] + cpu->x) % 256;
+		if (LOG_CPU) { sprintf(cpu->logBuff, "$%02X,x", ReadCpuMem(cpu, cpu->PC)); LogCPU(cpu); }
+		return (ReadCpuMem(cpu, cpu->PC++) + cpu->x) % 256;
 	}
 	case zeropage_y: {
-		if (LOG_CPU) { sprintf(cpu->logBuff, "$%02X,y", cpu->memory[cpu->PC]); LogCPU(cpu); }
-		return (cpu->memory[cpu->PC++] + cpu->y) % 256;
+		if (LOG_CPU) { sprintf(cpu->logBuff, "$%02X,y", ReadCpuMem(cpu, cpu->PC)); LogCPU(cpu); }
+		return (ReadCpuMem(cpu, cpu->PC++) + cpu->y) % 256;
 	}
 	case absolute_x: {
-		if (LOG_CPU) { sprintf(cpu->logBuff, "$%02X%02X,x", cpu->memory[cpu->PC+1], cpu->memory[cpu->PC]); LogCPU(cpu); }
-		uint8_t low = cpu->memory[cpu->PC++];
-		uint8_t high = cpu->memory[cpu->PC++];
+		if (LOG_CPU) { sprintf(cpu->logBuff, "$%02X%02X,x", ReadCpuMem(cpu, cpu->PC+1), ReadCpuMem(cpu, cpu->PC)); LogCPU(cpu); }
+		uint8_t low = ReadCpuMem(cpu, cpu->PC++);
+		uint8_t high = ReadCpuMem(cpu, cpu->PC++);
 		uint16_t examinedPC = low + 256 * high + cpu->x;
 		if(checkPageCrossEnabled) CheckPageCross(cpu, examinedPC);
 		return examinedPC;
 	}
 	case absolute_y: {
-		if (LOG_CPU) { sprintf(cpu->logBuff, "$%02X%02X,y", cpu->memory[cpu->PC + 1], cpu->memory[cpu->PC]); LogCPU(cpu); }
-		uint8_t low = cpu->memory[cpu->PC++];
-		uint8_t high = cpu->memory[cpu->PC++];
+		if (LOG_CPU) { sprintf(cpu->logBuff, "$%02X%02X,y", ReadCpuMem(cpu, cpu->PC+1), ReadCpuMem(cpu, cpu->PC)); LogCPU(cpu); }
+		uint8_t low = ReadCpuMem(cpu, cpu->PC++);
+		uint8_t high = ReadCpuMem(cpu, cpu->PC++);
 		uint16_t examinedPC = low + 256 * high + cpu->y;
 		if (checkPageCrossEnabled) CheckPageCross(cpu, examinedPC);
 		return examinedPC;
 	}
 	case indexed_indirect: {
-		if (LOG_CPU) { sprintf(cpu->logBuff, "($%02X,x)", cpu->memory[cpu->PC]); LogCPU(cpu); }
-		uint8_t low = cpu->memory[(cpu->memory[cpu->PC] + cpu->x) % 256];
-		uint8_t high = cpu->memory[(cpu->memory[cpu->PC] + cpu->x + 1) % 256];
+		if (LOG_CPU) { sprintf(cpu->logBuff, "($%02X,x)", ReadCpuMem(cpu, cpu->PC)); LogCPU(cpu); }
+		uint8_t low = ReadCpuMem(cpu, (ReadCpuMem(cpu, cpu->PC) + cpu->x) % 256);
+		uint8_t high = ReadCpuMem(cpu, (ReadCpuMem(cpu, cpu->PC) + cpu->x + 1) % 256);
 		uint16_t examinedPC = low + 256 * high;
 		cpu->PC++;
 		if (LOG_CPU) { sprintf(cpu->logBuff, " [$%04X]", examinedPC); LogCPU(cpu); }
 		return examinedPC;
 	}
 	case indirect_indexed: {
-		if (LOG_CPU) { sprintf(cpu->logBuff, "($%02X),y", cpu->memory[cpu->PC]); LogCPU(cpu); }
-		uint8_t low = cpu->memory[cpu->memory[cpu->PC]];
-		uint8_t high = cpu->memory[(cpu->memory[cpu->PC] + 1) % 256];
+		if (LOG_CPU) { sprintf(cpu->logBuff, "($%02X),y", ReadCpuMem(cpu, cpu->PC)); LogCPU(cpu); }
+		uint8_t low = ReadCpuMem(cpu, ReadCpuMem(cpu, cpu->PC));
+		uint8_t high = ReadCpuMem(cpu, (ReadCpuMem(cpu, cpu->PC) + 1) % 256);
 		uint16_t examinedPC = low + 256 * high + cpu->y;
 		if (checkPageCrossEnabled) CheckPageCross(cpu, examinedPC);
 		cpu->PC++;
@@ -85,7 +85,7 @@ uint16_t GetPCOfAddressing(CPU* cpu, int addressingMode, bool checkPageCrossEnab
 uint8_t GetValueWithAddressing(CPU* cpu, int addressingMode, bool checkPageCrossEnabled)
 {
 	uint16_t address = GetPCOfAddressing(cpu, addressingMode, checkPageCrossEnabled);
-	return cpu->memory[address];
+	return ReadCpuMem(cpu, address);
 }
 
 void SetZeroFlag(CPU* cpu, uint8_t val)
@@ -313,6 +313,7 @@ void DoDecrementOpcode(CPU* cpu, Opcode* opcode, uint8_t* operand)
 
 void DoDEC(CPU* cpu, Opcode* opcode)
 {
+	// ram mirroring!!
 	DoDecrementOpcode(cpu, opcode, &cpu->memory[GetPCOfAddressing(cpu, opcode->addressingMode, false)]);
 }
 
@@ -335,6 +336,7 @@ void DoIncreaseOpcode(CPU* cpu, Opcode* opcode, uint8_t* operand)
 
 void DoINC(CPU* cpu, Opcode* opcode)
 {
+	//ram mirroring!!
 	DoIncreaseOpcode(cpu, opcode, &cpu->memory[GetPCOfAddressing(cpu, opcode->addressingMode, false)]);
 }
 
@@ -353,21 +355,21 @@ void DoJMP(CPU* cpu, Opcode* opcode)
 	uint8_t hiOfNewPC, loOfNewPC;
 	if (opcode->addressingMode == absolute)
 	{
-		loOfNewPC = cpu->memory[cpu->PC++];
-		hiOfNewPC = cpu->memory[cpu->PC];
+		loOfNewPC = ReadCpuMem(cpu, cpu->PC++);
+		hiOfNewPC = ReadCpuMem(cpu, cpu->PC);
 	}
 	else
 	{
 		// addressingMode az indirekt JMP ($xxxx)
 		// itt van egy 6502 bug, ha $xxxx = $xxFF, mert abban az esetben 
 		// a PC $xxFF-t és $xx00-t olvassa. Pl JMP ($03ff) az új PC értékét $03ff-ból és $0300-ból kapja.
-		uint8_t lo = cpu->memory[cpu->PC+0];
-		uint8_t hi = cpu->memory[cpu->PC+1];
+		uint8_t lo = ReadCpuMem(cpu, cpu->PC+0);
+		uint8_t hi = ReadCpuMem(cpu, cpu->PC+1);
 		uint16_t vectorAddr = lo + 256 * hi;
-		loOfNewPC = cpu->memory[vectorAddr+0];
+		loOfNewPC = ReadCpuMem(cpu, vectorAddr+0);
 		if ((vectorAddr & 0x00FF) == 0xFF) // bug emulálása
 			vectorAddr -= 256;
-		hiOfNewPC = cpu->memory[vectorAddr+1];
+		hiOfNewPC = ReadCpuMem(cpu, vectorAddr+1);
 	}
 	cpu->PC = loOfNewPC + 256 * hiOfNewPC;
 }
@@ -460,8 +462,8 @@ void DoRTS(CPU* cpu, Opcode* opcode)
 void DoJSR(CPU* cpu, Opcode* opcode)
 {
 	uint8_t hiOfNewPC, loOfNewPC;
-	loOfNewPC = cpu->memory[cpu->PC++];
-	hiOfNewPC = cpu->memory[cpu->PC];
+	loOfNewPC = ReadCpuMem(cpu, cpu->PC++);
+	hiOfNewPC = ReadCpuMem(cpu, cpu->PC);
 	PushToStack(cpu, cpu->PC / 256); //magas először!
 	PushToStack(cpu, cpu->PC % 256); //alacsony
 
@@ -477,7 +479,7 @@ void DoLoadOpcode(CPU* cpu, Opcode* opcode, uint8_t* reg)
 	else if (addr == CONTROLLER_REG_4016 || addr == CONTROLLER_REG_4017)
 		*reg = ReadingFromControllerReg(cpu->controller);
 	else
-		*reg = cpu->memory[addr];
+		*reg = ReadCpuMem(cpu, addr);
 
 	SetZeroFlag(cpu, *reg);
 	SetNegativeFlag(cpu, *reg);
@@ -566,6 +568,7 @@ uint8_t* GetRegOrAddrOperand(CPU* cpu, Opcode* opcode, bool checkPageCrossEnable
 	}
 	else
 	{
+		//ram mirroring!!
 		return &cpu->memory[GetPCOfAddressing(cpu, opcode->addressingMode, checkPageCrossEnabled)];
 	}
 }

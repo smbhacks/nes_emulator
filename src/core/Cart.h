@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h> // FILE
 #include <stdlib.h>
+#include "Mapper.h"
 
 typedef struct Cart {
 	// fejléc
@@ -11,6 +12,9 @@ typedef struct Cart {
 	// ROM
 	uint8_t *PRG;
 	uint8_t *CHR;
+
+	Mapper mapper;
+	int internalMapperNum; // a Mapper.h enumeráció szerinti mapper sorszám
 } Cart;
 
 Cart* InsertCart(const char* path);
