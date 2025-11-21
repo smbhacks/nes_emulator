@@ -3,6 +3,7 @@
 #include "PPU.h"
 #include "Cart.h"
 #include "Controller.h"
+#include "Palette.h"
 
 typedef struct NES {
 	CPU* cpu;
@@ -19,3 +20,4 @@ void ResetNES(NES *nes);
 void TickNES(NES *nes);
 void RemoveCartNES(NES* nes);
 void DestroyNES(NES* nes);
+void UseCustomPalette(NES* nes, uint8_t* pal_ptr);

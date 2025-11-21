@@ -87,7 +87,9 @@ typedef struct PPU {
 	int sprite0_X; 
 	int sprite0_Y;
 
-	uint8_t* display;
+	uint8_t* display; // 256*240 RGB24 buffer, amelyet a core futtatónak kell legfoglalnia
+	uint8_t* palette; // 64xRGB24 palettára mutató
+	bool using_default_palette; // ha ez true, akkor a core egy konstanst palette tömbre mutat, a futtatónak meg nem kell foglalkoznia a paletta biztosításával
 } PPU;
 
 PPU* CreatePPU();
@@ -97,3 +99,4 @@ uint8_t ReadingFromPPUReg(PPU* ppu, uint16_t reg);
 void TickPPU(PPU* ppu);
 void DrawSprites(PPU* ppu);
 void DrawBackgroundColor(PPU* ppu);
+void ResetPalette(PPU* ppu);

@@ -18,6 +18,14 @@ NES* CreateNES()
 	return nes;
 }
 
+void UseCustomPalette(NES* nes, uint8_t* pal_ptr)
+{
+	FreeCustomPalette(nes->ppu);
+
+	nes->ppu->palette = pal_ptr;
+	nes->ppu->using_default_palette = false;
+}
+
 void RemoveCartNES(NES* nes)
 {
 	if(nes->cartInserted) 

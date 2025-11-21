@@ -121,29 +121,65 @@ int main(int argc, char* argv[]) {
             menubarHeight = igGetWindowSize().y;
             if (igBeginMenu("File", true))
             {
-                if (igMenuItem_Bool("Open iNES file..", "Ctrl+O", false, true)) { 
+                if (igMenuItem_Bool("Open iNES file..", "Ctrl+O", false, true)) 
+                { 
                     nfdchar_t *outPath = NULL;
                     nfdresult_t result = NFD_OpenDialog( NULL, NULL, &outPath );
                                 
-                    if ( result == NFD_OKAY ) {
+                    if ( result == NFD_OKAY ) 
+                    {
                         RemoveCartNES(nes);
                         SetCartNES(nes, outPath);
                         ResetNES(nes);
                         free(outPath);
                         SDL_SetWindowSize(window, 256 * WINDOW_SIZE, 240 * WINDOW_SIZE + menubarHeight);
                     }
-                    else {
-                        printf("Nem sikerult megnyitni a fajlt: %s\n", NFD_GetError() );
+                    else 
+                    {
+                        printf("Nem sikerult megnyitni a .nes fajlt: %s\n", NFD_GetError() );
                     }
                 }
-                if (igMenuItem_Bool("Close ROM", "Ctrl+C", false, true)) { 
+                if (igMenuItem_Bool("Close ROM", "Ctrl+C", false, true)) 
+                { 
                     RemoveCartNES(nes);              
                 }
-                if (igMenuItem_Bool("Reset", "Ctrl+R", false, true)) { 
+                if (igMenuItem_Bool("Reset", "Ctrl+R", false, true)) 
+                { 
                     ResetNES(nes);
                 }
-                if (igMenuItem_Bool("Exit", "Alt+F4", false, true)) { 
+                if (igMenuItem_Bool("Exit", "Alt+F4", false, true)) 
+                { 
                     running = false;
+                }
+                igEndMenu();
+            }
+            if (igBeginMenu("Video", true))
+            {
+                if (igMenuItem_Bool("Load .pal file..", "Ctrl+P", false, true))
+                {
+                    nfdchar_t* outPath = NULL;
+                    nfdresult_t result = NFD_OpenDialog(NULL, NULL, &outPath);
+
+                    if (result == NFD_OKAY)
+                    {
+                        uint8_t* p = MallocPalette(outPath);
+                        if (p != NULL)
+                        {
+                            UseCustomPalette(nes, p);
+                        }
+                        else
+                        {
+                            printf("Nem sikerult hasznalni a .pal fajlt (nem jo fajlmeret, 64x RGB24 kell)\n");
+                        }
+                    }
+                    else
+                    {
+                        printf("Nem sikerult megnyitni a .pal fajlt: %s\n", NFD_GetError());
+                    }
+                }
+                if (igMenuItem_Bool("Use default palette", "Ctrl+D", false, true))
+                {
+                    ResetPalette(nes->ppu);
                 }
                 igEndMenu();
             }
