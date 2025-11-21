@@ -45,6 +45,9 @@ void SetCartNES(NES* nes, const char* path)
 
 void ResetNES(NES *nes)
 {
+	if (!nes->cartInserted)
+		return;
+
 	nes->cpu->s -= 3;
 	nes->cpu->i = 1;
 
