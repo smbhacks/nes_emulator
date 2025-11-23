@@ -49,11 +49,14 @@ void DestroyNES(NES* nes)
 void SetCartNES(NES* nes, const char* path)
 {
 	nes->cart = InsertCart(path);
-	if (nes->cartInserted = nes->cart != NULL)
+	if (nes->cart != NULL)
 	{
+		nes->cartInserted = true;
 		nes->cpu->cart = nes->cart;
 		nes->ppu->cart = nes->cart;
 	}
+	else
+		nes->cartInserted = false;
 }
 
 void ResetNES(NES *nes)

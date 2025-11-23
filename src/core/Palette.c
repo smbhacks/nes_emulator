@@ -23,7 +23,7 @@ uint8_t default_palette[] = {
 
 uint8_t* GetDefPalette()
 {
-	return &default_palette;
+	return default_palette;
 }
 
 // NULL ha nem sikerült
