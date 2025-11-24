@@ -1,6 +1,7 @@
 #include "PPU.h"
 #include "Palette.h"
 #include "Mapper.h"
+#include "Cart.h"
 
 PPU* CreatePPU()
 {
@@ -171,7 +172,10 @@ uint8_t ReadingFromPPUReg(PPU* ppu, uint16_t reg)
 	case PPU_REG_DATA: {
 		// több részlet PPU.h-ban a PPU struct-ban
 		uint8_t value = ppu->PPUReadBuff;
-		ppu->PPUReadBuff = ReadChrMemViaMapper(ppu, ppu->v.value);
+		if (ppu->cart->CHR_size == 0 || ppu->v.value >= 0x2000)
+			ppu->PPUReadBuff = ppu->memory[ppu->v.value];
+		else 
+			ppu->PPUReadBuff = ReadChrMemViaMapper(ppu, ppu->v.value);
 		if (ppu->vram32Increment)
 			ppu->v.value += 32;
 		else
