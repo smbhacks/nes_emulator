@@ -105,6 +105,8 @@ uint8_t ReadCpuMem(CPU* cpu, uint16_t address)
 {
     if (address < 0x2000)
         return cpu->memory[address & 0x7ff];
+    else if (0x6000 <= address && address <= 0x7fff)
+        return cpu->memory[address];
 
     return ReadCpuMemViaMapper(cpu, address);
 }
@@ -113,6 +115,8 @@ void WriteCpuMem(CPU* cpu, uint16_t address, uint8_t value)
 {
     if (address < 0x2000)
         cpu->memory[address & 0x7ff] = value;
+    else if (0x6000 <= address && address <= 0x7fff)
+        cpu->memory[address] = value;
 
     WriteCpuMemViaMapper(cpu, address, value);
 }
