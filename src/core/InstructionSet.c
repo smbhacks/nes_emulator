@@ -473,14 +473,7 @@ void DoJSR(CPU* cpu, Opcode* opcode)
 void DoLoadOpcode(CPU* cpu, Opcode* opcode, uint8_t* reg)
 {
 	uint16_t addr = GetPCOfAddressing(cpu, opcode->addressingMode, false);
-
-	if (addr / 256 == 0x20)
-		*reg = ReadingFromPPUReg(cpu->ppu, addr);
-	else if (addr == CONTROLLER_REG_4016 || addr == CONTROLLER_REG_4017)
-		*reg = ReadingFromControllerReg(cpu->controller);
-	else
-		*reg = ReadCpuMem(cpu, addr);
-
+	*reg = ReadCpuMem(cpu, addr);
 	SetZeroFlag(cpu, *reg);
 	SetNegativeFlag(cpu, *reg);
 }

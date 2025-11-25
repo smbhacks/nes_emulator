@@ -4,7 +4,7 @@ uint8_t ReadDataInBank(uint8_t* memory, int memorySize, uint16_t address, uint16
 {
     int numOfBanksInPRG = memorySize / bankSize;
     if(bankNumber < 0)
-        bankNumber = numOfBanksInPRG - bankNumber;
+        bankNumber = numOfBanksInPRG + bankNumber;
     else
         bankNumber %= numOfBanksInPRG;
     int index = (address % bankSize) + bankNumber * bankSize;

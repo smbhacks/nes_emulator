@@ -105,6 +105,10 @@ uint8_t ReadCpuMem(CPU* cpu, uint16_t address)
 {
     if (address < 0x2000)
         return cpu->memory[address & 0x7ff];
+	else if (0x2000 <= address && address <= 0x2fff)
+		return ReadingFromPPUReg(cpu->ppu, address);
+	else if (address == CONTROLLER_REG_4016 || address == CONTROLLER_REG_4017)
+		return ReadingFromControllerReg(cpu->controller);
     else if (0x6000 <= address && address <= 0x7fff)
         return cpu->memory[address];
 
