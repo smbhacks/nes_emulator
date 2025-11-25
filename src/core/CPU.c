@@ -109,6 +109,14 @@ uint8_t ReadCpuMem(CPU* cpu, uint16_t address)
     return ReadCpuMemViaMapper(cpu, address);
 }
 
+void WriteCpuMem(CPU* cpu, uint16_t address, uint8_t value)
+{
+    if (address < 0x2000)
+        cpu->memory[address & 0x7ff] = value;
+
+    WriteCpuMemViaMapper(cpu, address, value);
+}
+
 int TickCPU(CPU *cpu)
 {
     cpu->currentCycleTime = 0;

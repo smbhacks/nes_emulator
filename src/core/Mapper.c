@@ -13,15 +13,15 @@ const MapperAndNumber mappers[] = {
 
 // ezt automatizálni kell az enumeráció sorrendje szerint
 uint8_t NROM_Read(CPU* cpu, uint16_t address);
-void	NROM_Write(CPU* cpu, uint16_t address);
+void	NROM_Write(CPU* cpu, uint16_t address, uint8_t value);
 uint8_t NROM_CHR(PPU* ppu, uint16_t address);
 uint8_t MMC3_Read(CPU* cpu, uint16_t address);
-void	MMC3_Write(CPU* cpu, uint16_t address);
+void	MMC3_Write(CPU* cpu, uint16_t address, uint8_t value);
 uint8_t MMC3_CHR(PPU* ppu, uint16_t address);
 typedef struct MapperFunctions {
 	Mapper mapper;
 	uint8_t(*ReadCpuByte)(CPU* cpu, uint16_t);
-	void(*WriteCpuByte)(CPU* cpu, uint16_t);
+	void(*WriteCpuByte)(CPU* cpu, uint16_t, uint8_t);
 	uint8_t(*ReadChrByte)(PPU* ppu, uint16_t);
 } MapperFunctions;
 const MapperFunctions mapperFns[] = {
@@ -44,10 +44,21 @@ Mapper GetMapper(uint8_t mapperNumber, int* internalMapperNum)
 
 uint8_t ReadCpuMemViaMapper(CPU* cpu, uint16_t address)
 {
+	if (address < 0x8000)
+		return 0xcd; // debug érték, rossz olvasás logikánál
+
 	return mapperFns[cpu->cart->internalMapperNum].ReadCpuByte(cpu, address);
 }
 
 uint8_t ReadChrMemViaMapper(PPU* ppu, uint16_t address)
 {
+	if(ppu->cart->CHR_size == 0)
+		return ppu->memory[address];
+
 	return mapperFns[ppu->cart->internalMapperNum].ReadChrByte(ppu, address);
+}
+
+void WriteCpuMemViaMapper(CPU* cpu, uint16_t address, uint8_t value)
+{
+	mapperFns[cpu->cart->internalMapperNum].WriteCpuByte(cpu, address, value);
 }

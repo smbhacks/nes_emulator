@@ -5,6 +5,7 @@ lib/nativefiledialog/build/*
 Makefile
 *.make
 /.vs
+/.vscode
 *.sln
 *.vcxproj
 *.user
