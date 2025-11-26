@@ -38,7 +38,7 @@ uint8_t MMC3_Read(CPU* cpu, uint16_t address)
 }
 void MMC3_Write(CPU* cpu, uint16_t address, uint8_t value)
 {
-    bool even = address % 2;
+    bool even = !(address % 2);
     if(0x8000 <= address && address <= 0x9FFF)
     {
         if(even)

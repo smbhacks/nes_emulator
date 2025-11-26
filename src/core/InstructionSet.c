@@ -513,7 +513,7 @@ void DoStoreOpcode(CPU* cpu, Opcode* opcode, uint8_t value)
 	else if (addr == CONTROLLER_REG_4016)
 		WritingToControllerReg(cpu->controller, value);
 	else
-		cpu->memory[addr] = value;
+		WriteCpuMem(cpu, addr, value);
 }
 
 void DoSTA(CPU* cpu, Opcode* opcode)

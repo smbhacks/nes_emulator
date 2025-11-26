@@ -65,8 +65,8 @@ const char* InstructionString[] = {
 
 void LogCPU(CPU* cpu)
 {
-    //printf(cpu->logBuff);
-    fputs(cpu->logBuff, cpu->logFile);
+    printf("%s", cpu->logBuff);
+    //fputs(cpu->logBuff, cpu->logFile);
 }
 
 CPU* CreateCPU()
