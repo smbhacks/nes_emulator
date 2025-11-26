@@ -4,7 +4,8 @@
 enum {
 	UNKNOWN_MAPPER = -1,
 	NROM,
-	MMC3
+	MMC3,
+	MMC1
 };
 
 typedef int Mapper;

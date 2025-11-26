@@ -8,7 +8,8 @@ typedef struct MapperAndNumber
 } MapperAndNumber;
 const MapperAndNumber mappers[] = {
 	{NROM, 0},
-	{MMC3, 4}
+	{MMC3, 4},
+	{MMC1, 1}
 };
 
 // ezt automatizálni kell az enumeráció sorrendje szerint
@@ -18,6 +19,9 @@ uint8_t NROM_CHR(PPU* ppu, uint16_t address);
 uint8_t MMC3_Read(CPU* cpu, uint16_t address);
 void	MMC3_Write(CPU* cpu, uint16_t address, uint8_t value);
 uint8_t MMC3_CHR(PPU* ppu, uint16_t address);
+uint8_t MMC1_Read(CPU* cpu, uint16_t address);
+void	MMC1_Write(CPU* cpu, uint16_t address, uint8_t value);
+uint8_t MMC1_CHR(PPU* ppu, uint16_t address);
 typedef struct MapperFunctions {
 	Mapper mapper;
 	uint8_t(*ReadCpuByte)(CPU* cpu, uint16_t);
@@ -26,7 +30,8 @@ typedef struct MapperFunctions {
 } MapperFunctions;
 const MapperFunctions mapperFns[] = {
 	{NROM, NROM_Read, NROM_Write, NROM_CHR},
-	{MMC3, MMC3_Read, MMC3_Write, MMC3_CHR}
+	{MMC3, MMC3_Read, MMC3_Write, MMC3_CHR},
+	{MMC1, MMC1_Read, MMC1_Write, MMC1_CHR},
 };
 
 Mapper GetMapper(uint8_t mapperNumber, int* internalMapperNum)
