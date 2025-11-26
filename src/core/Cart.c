@@ -35,11 +35,17 @@ Cart* InsertCart(const char* path)
 	}
 
 	// .nes: a PRG után következik a CHR, ha van
-	cart->CHR = (uint8_t*)malloc(cart->CHR_size);
-	if(fread(cart->CHR, cart->CHR_size, 1, cartFile) != 1)
+	// ha a CHR_size 0, az azt jelenti, hogy a játék CHR-RAMot használ
+	if(cart->CHR_size != 0)
 	{
-		exit(-1);
+		cart->CHR = (uint8_t*)malloc(cart->CHR_size);
+		if(fread(cart->CHR, cart->CHR_size, 1, cartFile) != 1)
+		{
+			exit(-1);
+		}
 	}
+	else
+		cart->CHR = NULL;
 
 	fclose(cartFile);
 

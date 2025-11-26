@@ -104,7 +104,7 @@ uint8_t MMC1_CHR(PPU* ppu, uint16_t address)
     {
         // =0
         bankSize = 0x2000; // 8 kb
-        bankSize = chrBank0 >> 1;
+        bankToUse = chrBank0 >> 1;
     }
     return ReadChrInBank(ppu, address, bankSize, bankToUse);
 }
