@@ -119,6 +119,7 @@ void TickNES(NES *nes)
 			ppuCyclesToDo--;
 		}
 	}
+	nes->ppu->drewSprite0 = false;
 	DrawSprites(nes->ppu); // mivel a játékok általában Vblankben hívják meg az OAM DMA-t, ezért én most így egyszerűen kezelem
 	DrawBackgroundColor(nes->ppu);
 	nes->cpu->currentCycleTimeInFrame = 0;

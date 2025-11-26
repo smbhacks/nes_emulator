@@ -88,6 +88,7 @@ typedef struct PPU {
 	// hol rajzoltuk a sprite0 első pixelét
 	int sprite0_X; 
 	int sprite0_Y;
+	bool drewSprite0;
 
 	uint8_t* display; // 256*240 RGB24 buffer, amelyet a core futtatónak kell legfoglalnia
 	uint8_t* palette; // 64xRGB24 palettára mutató

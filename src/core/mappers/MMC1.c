@@ -8,10 +8,10 @@ static int prgBank;
 static int chrBank0;
 static int chrBank1;
 
-static uint8_t shiftReg;
+static int shiftReg;
 static int shiftRegCounter;
 static int nametableArrangement;
-static int prgRomBankMode;
+static int prgRomBankMode = 3; // kell egy mapper init függvény
 static int chrRomBankMode;
 
 uint8_t MMC1_Read(CPU* cpu, uint16_t address)
@@ -56,8 +56,8 @@ void MMC1_Write(CPU* cpu, uint16_t address, uint8_t value)
     }
     else
     {
-        shiftReg >>= 2;
-        shiftReg |= ((value & 0b1) << 5); // az érték legalsó bitjét shifteljük be a regiszter 5. bitjébe
+        shiftReg >>= 1;
+        shiftReg |= ((value & 0b1) << 4); // az érték legalsó bitjét shifteljük be a regiszter 5. bitjébe
         if(--shiftRegCounter == 0)
         {
             // kész az 5-bites értékünk a shiftregiszterben
@@ -65,24 +65,25 @@ void MMC1_Write(CPU* cpu, uint16_t address, uint8_t value)
             switch (address & (0x8000 | 0x4000 | 0x2000))
             {
                 case 0x8000: {
-                    nametableArrangement = value & 0b00011;
-                    prgRomBankMode = (value & 0b01100) >> 2;
-                    chrRomBankMode = value & 0b10000 ? 1 : 0; 
+                    nametableArrangement = shiftReg & 0b00011;
+                    prgRomBankMode = (shiftReg & 0b01100) >> 2;
+                    chrRomBankMode = shiftReg & 0b10000 ? 1 : 0; 
                     break;
                 }
                 case 0xa000: {
-                    chrBank0 = value;
+                    chrBank0 = shiftReg;
                     break;
                 }
                 case 0xc000: {
-                    chrBank1 = value;
+                    chrBank1 = shiftReg;
                     break;
                 }
                 case 0xe000: {
-                    prgBank = value;
+                    prgBank = shiftReg;
                     break;
                 }
             }
+            shiftReg = 0;
             shiftRegCounter = 5;
         }
     }

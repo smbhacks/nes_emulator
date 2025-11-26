@@ -394,7 +394,7 @@ void TickPPU(PPU* ppu)
 	}
 
 	// állítjuk be a sprite0 flaget, ha sikerült rajzolni
-	if (ppu->ppuDotX > ppu->sprite0_X && ppu->ppuDotY >= (ppu->sprite0_Y-1))
+	if (ppu->ppuDotX > ppu->sprite0_X && ppu->ppuDotY >= (ppu->sprite0_Y-1) && ppu->renderSprites && ppu->drewSprite0)
 	{
 		ppu->sprite0Flag = true;
 	}
@@ -444,6 +444,7 @@ void DrawOneSprite(PPU* ppu, uint8_t spriteX, uint8_t spriteY, uint8_t spriteTil
 					DrawPixelWithPal(ppu, paletteValue, displayX, displayY);
 				if (isSprite0)
 				{
+					ppu->drewSprite0 = true;
 					ppu->sprite0_X = displayX;
 					ppu->sprite0_Y = displayY;
 				}

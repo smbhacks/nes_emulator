@@ -65,8 +65,8 @@ const char* InstructionString[] = {
 
 void LogCPU(CPU* cpu)
 {
-    printf("%s", cpu->logBuff);
-    //fputs(cpu->logBuff, cpu->logFile);
+    //printf("%s", cpu->logBuff);
+    fputs(cpu->logBuff, cpu->logFile);
 }
 
 CPU* CreateCPU()
@@ -121,8 +121,8 @@ void WriteCpuMem(CPU* cpu, uint16_t address, uint8_t value)
         cpu->memory[address & 0x7ff] = value;
     else if (0x6000 <= address && address <= 0x7fff)
         cpu->memory[address] = value;
-
-    WriteCpuMemViaMapper(cpu, address, value);
+    else
+        WriteCpuMemViaMapper(cpu, address, value);
 }
 
 int TickCPU(CPU *cpu)
