@@ -10,6 +10,7 @@
 #include <nfd.h>
 #include <debugmalloc.h>
 
+#include "segoeui.h"
 #include "core/NES.h"
 
 const int WINDOW_SIZE = 2;
@@ -75,6 +76,16 @@ int main(int argc, char* argv[]) {
     uint32_t timerStart, time;
     const unsigned int MSPF = 1000 / FPS; //milliszekundumok száma egy frame-ben
     bool running = true;
+    ImFontConfig fontCfg = {0};
+    fontCfg.FontDataOwnedByAtlas = false;
+    fontCfg.OversampleH = 1;
+    fontCfg.OversampleV = 1;
+    fontCfg.PixelSnapH  = true;
+    fontCfg.GlyphMaxAdvanceX = __FLT_MAX__;
+    fontCfg.RasterizerMultiply = 1.0f;
+    fontCfg.RasterizerDensity = 1.0f;
+    fontCfg.EllipsisChar = 0;
+    ImFont* segoeUiImFont = ImFontAtlas_AddFontFromMemoryTTF(io->Fonts, segoeUiBlob, sizeof(segoeUiBlob), 16, &fontCfg, NULL);
     while (running)
     {
         timerStart = SDL_GetTicks();
@@ -233,6 +244,7 @@ int main(int argc, char* argv[]) {
     RemoveCartNES(nes);
     DestroyNES(nes);
 
+    ImFontAtlas_RemoveFont(io->Fonts, segoeUiImFont);
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     igDestroyContext(NULL);
