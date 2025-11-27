@@ -1,7 +1,6 @@
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #define CIMGUI_USE_OPENGL3
 #define CIMGUI_USE_SDL2
-#define CIMGUI_USE_GLFW
 #include <stdio.h>
 #include <stdbool.h>
 #include <SDL.h>
