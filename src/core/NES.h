@@ -16,7 +16,7 @@ typedef struct NES {
 } NES;
 
 NES* CreateNES();
-void SetCartNES(NES* nes, const char* path);
+bool SetCartNES(NES* nes, const char* path);
 void ResetNES(NES *nes);
 void TickNES(NES *nes);
 void RemoveCartNES(NES* nes);

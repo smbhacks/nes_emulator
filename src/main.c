@@ -115,6 +115,21 @@ int main(int argc, char* argv[]) {
         TickNES(nes); // futtasuk az emulátort 1 frame-t
         SDL_UnlockTexture(displayTexture);
 
+        // popup definiálás
+        if(igBeginPopupModal("Hiba", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            igText("Ezt a fájlt nem bírta megnyitni az emulátor.\n(Nem támogatott mapper, vagy nem iNES fájl)");
+            ImVec2 avail = igGetContentRegionAvail();
+            const int buttonWidth = 120;
+            igSetCursorPosX(avail.x / 2 - buttonWidth/2);
+            if(igButton("OK", (ImVec2){buttonWidth, 0}))
+            {
+                igCloseCurrentPopup();
+            }
+            igSetItemDefaultFocus();
+            igEndPopup();
+        }
+        bool romErrorPopup = false;
         float menubarHeight = 0;
         if (igBeginMainMenuBar())
         {
@@ -129,7 +144,8 @@ int main(int argc, char* argv[]) {
                     if ( result == NFD_OKAY ) 
                     {
                         RemoveCartNES(nes);
-                        SetCartNES(nes, outPath);
+                        if(!SetCartNES(nes, outPath))
+                            romErrorPopup = true;
                         ResetNES(nes);
                         #undef free
                         free(outPath);
@@ -187,6 +203,9 @@ int main(int argc, char* argv[]) {
             }
             igEndMainMenuBar();
         }
+        
+        if(romErrorPopup)
+            igOpenPopup_Str("Hiba", ImGuiPopupFlags_None);
 
         SDL_GL_MakeCurrent(window, gl_context);
         glViewport(0, 0, (int)io->DisplaySize.x, (int)io->DisplaySize.y);

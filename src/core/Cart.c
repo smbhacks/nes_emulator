@@ -24,6 +24,7 @@ Cart* InsertCart(const char* path)
 	if (mapper == UNKNOWN_MAPPER)
 	{
 		printf("Nem tamogatott mappert hasznal ez a ROM\n");
+		free(cart);
 		return NULL;
 	}
 
@@ -31,7 +32,9 @@ Cart* InsertCart(const char* path)
 	cart->PRG = (uint8_t*)malloc(cart->PRG_size);
 	if(fread(cart->PRG, cart->PRG_size, 1, cartFile) != 1)
 	{
-		exit(-1);
+		free(cart->PRG);
+		free(cart);
+		return NULL;
 	}
 
 	// .nes: a PRG után következik a CHR, ha van
@@ -41,7 +44,10 @@ Cart* InsertCart(const char* path)
 		cart->CHR = (uint8_t*)malloc(cart->CHR_size);
 		if(fread(cart->CHR, cart->CHR_size, 1, cartFile) != 1)
 		{
-			exit(-1);
+			free(cart->PRG);
+			free(cart->CHR);
+			free(cart);
+			return NULL;
 		}
 	}
 	else
