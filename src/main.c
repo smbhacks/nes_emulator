@@ -9,6 +9,7 @@
 #include <cimgui_impl.h>
 #include <GL/gl3w.h>
 #include <nfd.h>
+#include <debugmalloc.h>
 
 #include "core/NES.h"
 
@@ -131,7 +132,9 @@ int main(int argc, char* argv[]) {
                         RemoveCartNES(nes);
                         SetCartNES(nes, outPath);
                         ResetNES(nes);
+                        #undef free
                         free(outPath);
+                        #define free(P) debugmalloc_free_full((P), "free", __FILE__, __LINE__)
                         SDL_SetWindowSize(window, 256 * WINDOW_SIZE, 240 * WINDOW_SIZE + menubarHeight);
                     }
                     else 

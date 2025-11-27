@@ -4,6 +4,7 @@
 #include "Cart.h"
 #include "Controller.h"
 #include "Palette.h"
+#include <debugmalloc.h>
 
 typedef struct NES {
 	CPU* cpu;

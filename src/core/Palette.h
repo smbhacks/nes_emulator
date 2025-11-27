@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <stdbool.h>
+#include <debugmalloc.h>
 
 typedef struct PPU PPU;
 

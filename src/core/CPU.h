@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <debugmalloc.h>
 #include "InstructionSet.h"
 #include "AddressingEnum.h"
 #include "PPU.h"

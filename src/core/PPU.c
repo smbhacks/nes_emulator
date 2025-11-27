@@ -12,7 +12,7 @@ PPU* CreatePPU()
 	memset(ppu, 0, sizeof(PPU));
 	ppu->memory = (uint8_t*)malloc(0x4000); // 16 kb 
 	ppu->oam = (uint8_t*)malloc(0x100); // 256 bájt
-	ppu->display = (uint8_t*)malloc(256 * 240 * 3); // RGB24 kijelző
+	//ppu->display = (uint8_t*)malloc(256 * 240 * 3); // RGB24 kijelző
 
 	ppu->using_default_palette = true;
 	ResetPalette(ppu);

@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h> // FILE
 #include <stdlib.h>
+#include <debugmalloc.h>
 #include "Mapper.h"
 
 typedef struct Cart {

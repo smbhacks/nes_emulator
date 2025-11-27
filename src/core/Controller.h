@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <debugmalloc.h>
 
 #define CONTROLLER_REG_4016 0x4016 // kontroller 1
 #define CONTROLLER_REG_4017 0x4017 // kontroller 2

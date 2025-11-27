@@ -23,7 +23,8 @@ project "NES_Emulator"
         "lib/cimgui/submodule/imgui",
         "lib/cimgui/submodule/imgui/backends",
         "lib/gl3w/include",
-        "lib/nativefiledialog/submodule/src/include"
+        "lib/nativefiledialog/submodule/src/include",
+        "lib/debugmalloc"
     }
 
     libdirs {
