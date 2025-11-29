@@ -1088,3 +1088,163 @@ Felszabadítja az egyénileg betöltött paletta memóriaterületét.
 + Ellenőrzi a PPU ``using_default_palette`` flagjét.
 + Ha a flag hamis (tehát egyéni palettát használunk), meghívja a ``free`` függvényt a ppu->palette mutatón.
 
+## Mapper.h
+
+```c
+enum {
+	UNKNOWN_MAPPER = -1,
+	NROM,
+	MMC3,
+	...
+};
+```
+
+Felsorolja a támogatott mappereket. 
+```c
+typedef int Mapper;
+```
+
+## Mapper.c
+
+```c
+typedef struct MapperAndNumber
+{
+	Mapper mapper;
+	uint8_t mapperNumber;
+} MapperAndNumber;
+const MapperAndNumber mappers[] = {
+	{NROM, 0},
+	{MMC3, 4},
+	{MMC1, 1}
+};
+```
+
+Hozzárendeli az internális mapper számot az iNES specifikációban lévő mapper számokhoz.
+
+---
+
+```c
+typedef struct MapperFunctions {
+	Mapper mapper;
+	uint8_t(*ReadCpuByte)(CPU* cpu, uint16_t);
+	void   (*WriteCpuByte)(CPU* cpu, uint16_t, uint8_t);
+	uint8_t(*ReadChrByte)(PPU* ppu, uint16_t);
+} MapperFunctions;
+const MapperFunctions mapperFns[] = {
+	{NROM, NROM_Read, NROM_Write, NROM_CHR},
+	{MMC3, MMC3_Read, MMC3_Write, MMC3_CHR},
+	...
+};
+```
+
+Ez a struktúra fogja össze egy adott mapperhez tartozó implementációs függvényeket. A ``mapperFns`` tömb tartalmazza a konkrét hozzárendeléseket (pl. NROM -> ``NROM_Read``, ``NROM_Write``, ``NROM_CHR``). A tömb sorrendje az Mapper.h-ban lévő enumeráció sorrendjét kell, hogy kövesse.  
+
+---
+
+```c
+Mapper GetMapper(uint8_t mapperNumber, int* internalMapperNum)
+```
+
+A kapott iNES mapper szám alapján megkeresi a belső Mapper enum értékét.<br>
+Beállítja az ``internalMapperNum`` mutatót a ``mapperFns`` tömb indexére, hogy a későbbi hívások gyorsan elérjék a függvényeket.
+Ha a mapper nem támogatott, ``UNKNOWN_MAPPER`` értékkel tér vissza.
+
+---
+
+```c
+uint8_t ReadCpuMemViaMapper(CPU* cpu, uint16_t address)
+```
+
+A CPU memóriatérképének felső felét (kazetta terület) kezeli.
+Ha a cím kisebb, mint 0x8000, debug értéket (0xcd) ad vissza (hibás logikát jelezhet). Egyébként meghívja az adott mapper ``(*ReadCpuByte)(CPU* cpu, uint16_t)`` függvényét a ``mapperFns`` tömbből, és annak ``uint8_t`` értékével tér vissza.
+
+---
+
+```c
+uint8_t ReadChrMemViaMapper(PPU* ppu, uint16_t address)
+```
+
+A PPU grafikus memóriaolvasását kezeli.<br>
+CHR-RAM kezelés: Ha a kazetta ``CHR_size`` értéke 0, akkor a PPU belső memóriáját (CHR-RAM) olvassa közvetlenül, mapper hívás nélkül.<br>
+Egyébként (CHR-ROM esetén) meghívja az adott mapper ``(*ReadChrByte)(PPU* ppu, uint16_t)`` függvényét, és annak ``uint8_t`` értékével tér vissza.
+
+---
+
+```c
+void WriteCpuMemViaMapper(CPU* cpu, uint16_t address, uint8_t value)
+```
+
+A CPU írási műveleteit továbbítja a kazettára. Mivel a ROM írásvédett, ezeket az írásokat a mapperek általában konfigurációra (pl. bank switch) használják. Meghívja az adott mapper ``(*WriteCpuByte)(CPU* cpu, uint16_t, uint8_t)`` függvényét.
+
+---
+
+## Generic.c
+
+Általános segédfüggvények a bankváltások kezeléséhez. Mivel a mapperek logikája gyakran hasonló (memóriabankok cserélgetése), a közös funkciók ebbe a fájlba kerültek.
+
+---
+
+```c
+uint8_t ReadDataInBank(uint8_t* memory, int memorySize, uint16_t address, uint16_t bankSize, int bankNumber)
+```
+
+Kiszámolja a fizikai címet a ROM tömbben, és az ott lévő értékkel tér vissza.<br>
+Negatív bank indexelés:  A -1 az utolsó bankot, a -2 az utolsó előttit jelenti. Ez hasznos az olyan mappereknél, ahol az utolsó bank fixen be van drótozva a CPU memória végére.<br>
+Túlcsordulás kezelés: A ``bankNumber``-t a ROM mérete alapján modulózza, hogy elkerülje a memórián kívüli olvasást.
+
+
+---
+
+```c
+uint8_t ReadPrgInBank(CPU* cpu, uint16_t address, uint16_t bankSize, int bankNumber)
+```
+
+Meghívja a ``ReadDataInBank`` függvényt egy CPU-s olvasásra,
+és azzal tér vissza.
+
+---
+
+```c
+uint8_t ReadChrInBank(PPU* ppu, uint16_t address, uint16_t bankSize, int bankNumber)
+```
+
+Meghívja a ``ReadDataInBank`` függvényt egy PPU-s olvasásra,
+és azzal tér vissza.
+
+## NROM.c
+
+A legegyszerűbb, mapper chip nélküli kazetta implementációja.
+
+Olvasás: A CPU címteréből (0x8000-0xFFFF) kivonja a 0x8000 eltolást. Ha a PRG ROM mérete csak 16 KB, akkor a címet maszkolja (& 0x3fff), így a memória tükröződik a 0xC000-0xFFFF tartományban is.
+
+Írás: Mivel az NROM-nak nincsenek regiszterei, az írás művelet nem csinál semmit.
+
+## MMC1.c (Mapper 1)
+
+Az első elterjedt ASIC mapper, amely soros adatátvitelt használ a konfiguráláshoz.
+
+Shift Regiszter Mechanizmus: A CPU adatbusza 8 bites, de az MMC1 kevés lábbal rendelkezett, ezért az adatokat bitenként kell elküldeni neki.<br>
+Minden írásnál az adat legalsó bitje bekerül a belső ``shiftReg``-be.<br>
+Az 5. írás után a ``shiftReg`` tartalma átmásolódik a célregiszterbe, amelyet a cím határoz meg ("Control", CHR bankok, PRG bank).
+Ha az írt érték MSB-je 1, akkor a ``shiftReg`` alaphelyzetbe állítódik.
+
+PRG: Támogatja a 32 KB-os módot, illetve a "fix első" vagy "fix utolsó" bank módot 16 KB-os lapozással.<br>
+CHR: Képes bankolni 8 KB-os vagy 4 KB-os módban.
+
+Részletesebb specifikáció: https://www.nesdev.org/wiki/MMC1
+
+## MMC3.c (Mapper 4)
+
+Az egyik legnépszerűbb mapper.
+
+Regiszterek elérése: Az MMC3 írási logikája a cím páros vagy páratlan voltán alapul:
+
+Páros cím (pl. 0x8000): A parancsregiszter írása. Kiválasztja, hogy melyik belső regisztert akarjuk módosítani a következő írással, valamint beállítja a bankok elrendezésének módját.
+
+Páratlan cím (pl. 0x8001): Adat írása a kiválasztott regiszterbe (a ``R`` tömb egyik elemébe).
+
+PRG-ROM: A ``prgRomBankMode`` változó határozza meg, hogy a 0x8000~0x9FFF-es vagy a 0xC000~0xDFFF-es cím fix, és melyik cserélhető. A 0xE000-es tartomány mindig az utolsó bankra mutat. A 0xA000~0xBFFF tartomány minden módban bankolható.
+
+CHR-ROM: A ``chrA12inversion`` bit megcseréli a 2x2KB és a 4x1KB bankok helyét a memóriában.
+
+Részletesebb specifikáció: https://www.nesdev.org/wiki/MMC3
