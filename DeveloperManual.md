@@ -187,7 +187,36 @@ void CreateOpcodes()
 Létrehozza az ``opcodes`` tömbben az összes opkód struktúráját.
 Ehhez felhasználja a ``validOpcodes`` tömböt, az architektúra által nem támogatott opkódokhoz pedig "illegális instrukció" függvényt rendel (amelyek nem csinálnak semmit).
 
----
+## AddressingEnum.h
+
+```c
+enum AddressingMode
+{
+    none = 0,
+    immediate,
+    relative,
+    zeropage,
+    absolute,
+    indirect,
+    zeropage_x,
+    zeropage_y,
+    absolute_x,
+    absolute_y,
+    indexed_indirect,
+    indirect_indexed
+};
+```
+A címzési módok jelentése:
++ ``none`` (Implicit/Accumulator): Az utasításnak nincs operandusa (pl. RTS), vagy az akkumulátoron végez műveletet (pl. LSR A).
++ ``immediate``: Az utasítás utáni bájt maga az adat, nem egy memóriacím (pl. LDA **#10**).
++ ``relative``: Feltételes ugrásoknál (branch) használt relatív eltolás (offset).
++ ``zeropage``: A memória első 256 bájtjának (0. lap, $00xx) címzése. Gyorsabb és rövidebb, mint az abszolút címzés.
++ ``absolute``: Teljes 16 bites memóriacím megadása ($xxxx).
++ ``indirect``: Indirekt címzés (pointer), ahol a megadott cím a tényleges címet tartalmazza. A 6502-n ezt csak a JMP utasítás használja.
++ ``zeropage_x``, ``zeropage_y``: A 0. lapon belüli címzés, az X vagy Y regiszter értékével eltolva. Ha az összeg túlcsordul, a cím a 0. lapon belül marad.
++ ``absolute_x``, ``absolute_y``: 16 bites abszolút címzés, az X vagy Y regiszter értékével eltolva.
++ ``indexed_indirect`` (Indirect, X): "Pre-indexed" mód. A 0. lap címéhez hozzáadjuk az X regisztert, és az így kapott címről olvassuk ki a tényleges 16 bites címet.
++ ``indirect_indexed`` (Indirect), Y: "Post-indexed" mód. A 0. lapon megadott címről kiolvasunk egy 16 bites báziscímet, és ahhoz adjuk hozzá az Y regiszter értékét.
 
 ## PPU.h
 
