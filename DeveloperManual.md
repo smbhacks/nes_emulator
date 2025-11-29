@@ -1277,3 +1277,87 @@ PRG-ROM: A ``prgRomBankMode`` változó határozza meg, hogy a 0x8000~0x9FFF-es 
 CHR-ROM: A ``chrA12inversion`` bit megcseréli a 2x2KB és a 4x1KB bankok helyét a memóriában.
 
 Részletesebb specifikáció: https://www.nesdev.org/wiki/MMC3
+
+## Controller.h 
+
+```c
+typedef struct Controller {
+	int a;
+	int b;
+	int select;
+	int start;
+	int up;
+	int down;
+	int left;
+	int right;
+	bool strobeBit;
+	int nextBitToRead;
+} Controller;
+```
+
+``a``, ``b``, ``select``, ``start``, ``up``, ``down``, ``left``, ``right``<br>
+Ezek a változók tárolják, hogy az adott gomb le van-e nyomva (1 vagy 0).
+
+``strobeBit``<br>
+A vezérlő "kapuzó" jele. Ha ez aktív (1), a belső állapot folyamatosan az első gomb (A) értékére áll vissza.
+
+``nextBitToRead``<br>
+Egy belső számláló, amely nyilvántartja, hogy a soros olvasás során melyik gomb állapotát kell következőnek visszaadni a CPU-nak.
+
+```c
+#define CONTROLLER_BIT_OF_A		 0
+#define CONTROLLER_BIT_OF_B		 1
+#define CONTROLLER_BIT_OF_SELECT 2
+#define CONTROLLER_BIT_OF_START	 3
+#define CONTROLLER_BIT_OF_UP	 4
+#define CONTROLLER_BIT_OF_DOWN	 5
+#define CONTROLLER_BIT_OF_LEFT	 6
+#define CONTROLLER_BIT_OF_RIGHT	 7
+```
+
+A header meghatározza a kontroller olvasás sorrendjét.<br>
+A -> B -> Select -> Start -> Fel -> Le -> Bal -> Jobb
+
+## Controller.c
+
+```c
+Controller* CreateController()
+```
+
+Lefoglalja a memóriát a ``Controller`` struktúrának, és nullázza azt.
+
+---
+
+```c
+void FreeController(Controller* controller)
+```
+
+Felszabadítja a ``controller`` struktúrát.
+
+---
+
+```c
+void WritingToControllerReg(Controller* controller, uint8_t value)
+```
+
+A CPU írási műveletét kezeli a 0x4016-os címen. <br>
+Ez a függvény állítja be a ``strobeBit`` értékét a bemenő adat legalsó bitje alapján.<br>
+
+---
+
+```c
+uint8_t ReadingFromControllerReg(Controller* controller)
+```
+
+A CPU olvasási műveletét kezeli a 0x4016-os címen.<br>
+A ``nextBitToRead`` számláló alapján visszaadja az aktuális gomb állapotát.<br>
+Olvasás után növeli ezt a számlálót, így a következő olvasás a következő gomb állapotát adja vissza (soros kommunikáció).<br>
+Meghívja a ``CheckStrobe`` függvényt.
+
+---
+
+```c
+void CheckStrobe(Controller* controller)
+```
+
+Ha a ``strobeBit`` aktív, akkor a ``nextBitToRead`` nullázódik.
