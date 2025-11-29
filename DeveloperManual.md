@@ -168,7 +168,7 @@ Visszatérési értéke a kiolvasott érték.
 void WriteCpuMem(CPU* cpu, uint16_t address, uint8_t value)
 ```
 
-Egy adott CPU címre ír egy értéket. Az address értéke bármi lehet. (0x0000-0xFFFF)
+Egy adott CPU címre ír egy értéket. Az addressre ennek kell teljesülnie: 0x0000 <= address < 0x2000, vagy 0x6000 <= address. A többi memóriaterületekre való írás ebben a függvényben már nem csinál semmit.
 
 ---
 
@@ -571,4 +571,313 @@ bool isDisplayMagenta(PPU* ppu, int x, int y)
 ```
 
 Visszaadja, hogy az adott x, y pontban magenta szín van-e a ``display``-en.
+
+## InstructionSet
+
+Ez a fájl tartalmazza a 6502 alapú CPU utasításkészletének implementációját, valamint a címzési módok kezelését.
+
+--- 
+
+```c
+uint16_t GetPCOfAddressing(
+    CPU* cpu, 
+    int addressingMode, 
+    bool checkPageCrossEnabled
+)
+```
+
+Az aktuális utasítás címzési módja alapján kiszámolja a memóriacímet, ahol az operandus található. Kezeli a programszámláló léptetését.<br>
+Meghívja a ``CheckPageCross`` függvényt, ha annak ellenőrzését figyelembe kell venni az adott instrukcióban.<br>
+
+---
+
+```c
+uint8_t GetValueWithAddressing(
+    CPU* cpu, 
+    int addressingMode, 
+    bool checkPageCrossEnabled
+)
+```
+
+Meghívja a ``GetPCOfAddressing`` függvényt, majd kiolvassa az azon a címen lévő értéket.
+
+---
+
+```c
+void SetZeroFlag(CPU* cpu, uint8_t val)
+```
+
+Ha a ``val`` = 0, akkor beállítja a ``z`` flaget 1-re, egyébként 0-ra.
+
+---
+
+```c
+void SetOverflowFlag(CPU* cpu, uint8_t a, uint8_t m, uint8_t result)
+```
+
+Beállítja a ``v`` flaget 1-re, az ``a``, ``m`` és a ``result`` MSB-k alapján. Előjeles összeadás után a rossz előjeles végeredményt jelzi.
+
+---
+
+```c
+void SetNegativeFlag(CPU* cpu, uint8_t val)
+```
+
+Beállítja a ``n`` flaget 1-re, ha a ``val`` MSB-je 1-es.
+
+---
+
+```c
+void DoIllegal(CPU* cpu, Opcode* opcode)
+void DoBRK(CPU* cpu, Opcode* opcode)
+void DoNOP(CPU* cpu, Opcode* opcode)
+```
+
+Nem csinál semmit.
+
+---
+
+```c
+void DoADC(CPU* cpu, Opcode* opcode)
+void DoSBC(CPU* cpu, Opcode* opcode)
+```
+
+Összeadás és kivonás carry-vel az A regiszterbe. Beállítja a ``c``, ``v``, ``z``, ``n`` flageket.
+
+---
+
+```c
+void DoAND(CPU* cpu, Opcode* opcode)
+```
+
+Az operandussal ÉS-eli az A regisztert. Beállítja a ``z``, ``n`` flageket.
+
+---
+
+```c
+void DoBranchOpcode(CPU* cpu, int8_t offset)
+```
+
+A program "branchel" a CPU programszámláló beállításával.
+*Page crossing*-t figyelmbe veszi.<br>
+Ezt a függvényt a következő függvények hívják meg:  
++ ``DoBCC``: branch, ha ``c``=0
++ ``DoBCS``: branch, ha ``c``=1
++ ``DoBEQ``: branch, ha ``z``=1
++ ``DoBNE``: branch, ha ``z``=0
++ ``DoBPL``: branch, ha ``n``=0
++ ``DoBMI``: branch, ha ``n``=1
++ ``DoBVC``: branch, ha ``v``=0
++ ``DoBVS``: branch, ha ``v``=1
+
+---
+
+```c
+void DoBIT(CPU* cpu, Opcode* opcode)
+```
+
+Teszteli a memóriában lévő biteket az akkumulátorral (A regiszter), anélkül, hogy megváltoztatná azt (``n``, ``v``, ``z`` flagek beállítása).
+
+---
+
+```c
+void DoCLC(CPU* cpu, Opcode* opcode)
+void DoCLD(CPU* cpu, Opcode* opcode)
+void DoCLI(CPU* cpu, Opcode* opcode)
+void DoCLV(CPU* cpu, Opcode* opcode)
+```
+
+Beállítja az egyes flageket 0-ra.
+
+---
+
+```c
+void DoSEC(CPU* cpu, Opcode* opcode)
+void DoSED(CPU* cpu, Opcode* opcode)
+void DoSEI(CPU* cpu, Opcode* opcode)
+```
+
+Beállítja az egyes flageket 1-re.
+
+---
+
+```c
+void DoComparisonOpcode(CPU* cpu, Opcode* opcode, uint8_t* reg)
+```
+
+Végrehajt egy komparátor instrukciót, amelynek eredményét a ``c``, ``z``, ``n`` flagekben jeleníti meg. 
+Ezt a függvényt a következő függvények hívják meg: ``DoCMP``, ``DoCPX``, ``DoCPY``
+A függvény ``*reg`` paramétere a regiszter címe kerül (A, X, Y), amellyel összehasonlítunk. 
+
+---
+
+```c
+void DoDecrementOpcode(CPU* cpu, Opcode* opcode, uint8_t* operand)
+```
+Végrehajt egy dekrementálás instrukciót. Beállítja a ``z``, ``n`` flageket.
+Ezt a függvényt a következő függvények hívják meg: ``DoDEC``, ``DoDEX``, ``DoDEY``
+A függvény ``*reg`` paramétere az operandus címe (RAM érték, X, Y).
+
+---
+
+```c
+void DoIncreaseOpcode(CPU* cpu, Opcode* opcode, uint8_t* operand)
+```
+Végrehajt egy inkrementálás instrukciót. Beállítja a ``z``, ``n`` flageket.
+Ezt a függvényt a következő függvények hívják meg: ``DoINC``, ``DoINX``, ``DoINY``
+A függvény ``*reg`` paramétere az operandus címe (RAM érték, X, Y).
+
+---
+
+```c
+void DoJMP(CPU* cpu, Opcode* opcode)
+```
+
+Feltétel nélkül ugrás.<br>
+Hardware Bug Emuláció: Az indirekt ugrásnál (JMP ($xxxx)), ha a vektor címe oldalhatárra esik (pl. $xxFF), a 6502 processzor hibásan olvassa a cím felső bájtját (nem lép át a következő page-re), hanem $xx00-t olvassa. 
+
+---
+
+```c
+void PushToStack(CPU* cpu, uint8_t val)
+uint8_t PopFromStack(CPU* cpu)
+```
+
+A CPU memória 0x0100~0x1FF része a verem. Ezek a függvények oda pusholnak és onnan poppolnak értéket.
+
+---
+
+```c
+void DoPHA(CPU* cpu, Opcode* opcode)
+void DoPLA(CPU* cpu, Opcode* opcode)
+void DoPHP(CPU* cpu, Opcode* opcode)
+```
+
+PHA: Akkumulátor pusholása a veremre.
+PLA: Akkumulátorba poppolás a veremről.
+PHP: Processzor flagek pusholása a veremre.
+Ezek a függvények a ``PushToStack`` és ``PopFromStack``-et hívják meg.
+
+---
+
+```c
+int IsBitOn(int value, int bit)
+```
+
+Bit tesztelésre használt segédfüggvény.<br>
+``value``: vizsgálandó érték<br>
+``bit``: vizsgálandó bit sorszáma 0.-tól sorszámozva<br>
+Visszatérési érték az adott sorszámú bit értéke az értékben (0 vagy 1).
+
+---
+
+```c
+int PopProcessorFlagsFromStack(CPU* cpu)
+```
+
+Függvény, amely a veremről poppol egy érték a processzor flagekbe. A ``DoPLP`` opkód mellett a ``DoRTI`` is ezt hívja meg.
+
+---
+
+```c
+uint16_t Pop16BitFromStack(CPU* cpu)
+```
+
+Kétszer hívja meg a ``PopFromStack`` függvényt, és egy 16-bites értékkel tér vissza 8-bit helyett. A ``DoRTS`` és a ``DoRTI`` függvények hívják meg.
+
+---
+
+```c
+void DoRTS(CPU* cpu, Opcode* opcode)
+void DoRTI(CPU* cpu, Opcode* opcode)
+```
+
+Meghívják a ``Pop16BitFromStack`` függvényt, és annak visszatérési értékére állítják a programszámlálót. A ``DoRTI`` abban különleges, hogy előtte még a processzor flagjeit beállítja a ``PopProcessorFlagsFromStack`` visszatérési értékére.
+
+---
+
+```c
+void DoJSR(CPU* cpu, Opcode* opcode)
+```
+
+Szubrutin hívás. Veremre felrakja a visszatérendő programszámláló értékét a ``PushToStack`` függvénnyel, és utána az adott címre ugrik.
+
+---
+
+```c
+void DoLoadOpcode(CPU* cpu, Opcode* opcode, uint8_t* reg)
+```
+
+Végrehajt egy betöltés instrukciót. Beállítja a ``z``, ``n`` flageket.
+Ezt a függvényt a következő függvények hívják meg: ``DoLDA``, ``DoLDX``, ``DoLDY``
+A függvény ``*reg`` paramétere az operandus címe kerül (A, X, Y).
+
+---
+
+```c
+void DoOamDma(CPU* cpu, PPU* ppu, uint8_t page)
+```
+
+Végrehajt egy egész OAM DMA-t. 
+A PPU ``oam``-jába másolja a paraméterként megadott ``page`` 256 bájtnyi CPU memória területet. 
+Ezalatt a CPU "megáll", amit az emulátor úgy kezel, hogy az ``currentCycleTime``-hoz hozzáad 513-at (kb. eddig tart az OAM DMA).
+
+---
+
+```c
+void DoStoreOpcode(CPU* cpu, Opcode* opcode, uint8_t value)
+```
+
+A ``STA``, ``STX``, ``STY`` utasítások közös kezelője. Ez nem csak a RAM-ba írhat, hanem ezzel keresztül kommunikálhat különböző NES egységekkel:
++ PPU Regiszterek (0x2000-0x3FFF): Ha a cím ebbe a tartományba esik, a ``WritingToPPUReg`` függvényt hívja.
++ OAM DMA (0x4014): Ha erre a címre írunk, meghívja a ``DoOamDma`` függvényt.
++ Kontroller (0x4016): A kontroller input polling indítása.
+Egyéb esetben sima írás a CPU memóriába, vagy mapperrel való kommunikálás: ``WriteCpuMem``
+
+---
+
+```c
+void DoEOR(CPU* cpu, Opcode* opcode)
+```
+
+Az operandussal KIZÁRÓ VAGY-olja az A regisztert. Beállítja a ``z``, ``n`` flageket.
+
+---
+
+```c
+void DoORA(CPU* cpu, Opcode* opcode)
+```
+
+Az operandussal VAGY-olja az A regisztert. Beállítja a ``z``, ``n`` flageket.
+
+---
+
+```c
+uint8_t* GetRegOrAddrOperand(CPU* cpu, Opcode* opcode, bool checkPageCrossEnabled)
+```
+
+Ha az opkód címzési módja implicit, semmi (akkumulátor), akkor az akkumulátor ``cpu->a`` címét adja vissza.
+Egyébként a CPU memóriájában egy érték címét adja vissza az adott címzési módnak megfelelően.
+
+---
+
+```c
+void DoASL(CPU* cpu, Opcode* opcode)
+void DoLSR(CPU* cpu, Opcode* opcode)
+void DoROL(CPU* cpu, Opcode* opcode)
+void DoROR(CPU* cpu, Opcode* opcode)
+```
+
+Biteltoló és forgató utasítások. Az ``ASL``, ``LSR`` belépő bitjei 0-ák, míg a ``ROL`` és ``ROR`` opkódoké a ``c`` flag.
+Az utóbbi kettő továbbá beállítja a ``c`` flaget a kilépő bitre. 
+Ezen kívül még más flageket is beállítanak.
+
+---
+
+```c
+void DoTransferOpcode(CPU* cpu, uint8_t *from, uint8_t *to, bool setFlags)
+```
+
+Átmásolja a ``*from`` értékét a ``*to`` változóba. Regiszterek közötti adatmozgató opkódok használják: ``DoTAX``, ``DoTAY``, ``DoTSX``, ``DoTXA``, ``DoTXS``, ``DoTYA``.<br>
+Ha az adott instrukció követeli, akkor beállítja a ``z`` és ``n`` flageket a ``setFlags`` paraméteren keresztül.
 
