@@ -1048,3 +1048,43 @@ A PRG ROM számára foglalt területet.<br>
 A CHR ROM számára foglalt területet.<br>
 Magát a Cart struktúrát.
 
+## Palette.c
+
+```c
+uint8_t default_palette[] = {
+    0x62, 0x62, 0x62, 0x00, ...
+}
+```
+
+Egy statikus tömb, amely a *2C02G* típusú PPU chip alapértelmezett színeit tartalmazza RGB24 formátumban (pixelenként 3 bájt: R, G, B). A tömb mérete 192 bájt (64 lehetséges NES szín × 3 bájt színkomponens).
+
+---
+
+```c
+uint8_t* GetDefPalette()
+```
+
+Visszaadja az alapértelmezett ``default_palette`` tömb mutatóját.
+
+---
+
+```c
+uint8_t* MallocPalette(const char* path)
+```
+
+Egy külső, bináris palettafájl (.pal) betöltését végzi el.
++ Megnyitja a fájlt bináris olvasásra.
++ Beolvas 192 bájtot (64 színt) egy átmeneti bufferbe.
++ Ha az olvasás sikeres, dinamikusan foglal (``malloc``) egy 192 bájtos területet a memóriában, és átmásolja oda az adatokat.
++ Visszatérési értéke az új paletta mutatója, vagy hiba esetén ``NULL``.
+
+---
+
+```c
+void FreeCustomPalette(PPU* ppu)
+```
+
+Felszabadítja az egyénileg betöltött paletta memóriaterületét.
++ Ellenőrzi a PPU ``using_default_palette`` flagjét.
++ Ha a flag hamis (tehát egyéni palettát használunk), meghívja a ``free`` függvényt a ppu->palette mutatón.
+
