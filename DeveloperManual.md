@@ -881,3 +881,104 @@ void DoTransferOpcode(CPU* cpu, uint8_t *from, uint8_t *to, bool setFlags)
 Átmásolja a ``*from`` értékét a ``*to`` változóba. Regiszterek közötti adatmozgató opkódok használják: ``DoTAX``, ``DoTAY``, ``DoTSX``, ``DoTXA``, ``DoTXS``, ``DoTYA``.<br>
 Ha az adott instrukció követeli, akkor beállítja a ``z`` és ``n`` flageket a ``setFlags`` paraméteren keresztül.
 
+## NES.h
+
+### NES struktúra
+
+```c
+typedef struct NES {
+	CPU* cpu;
+	PPU* ppu;
+	Cart* cart;
+	Controller* controller;
+
+	bool cartInserted;
+} NES;
+```
+
+``cpu``<br>
+Mutató a dinamikusan foglalt ``CPU`` struktúrára.
+
+``ppu``<br>
+Mutató a dinamikusan foglalt ``PPU`` struktúrára.
+
+``cart``<br>
+Mutató a behelyezett kazettára (``Cart`` struktúra).
+
+``controller``<br>
+Mutató a kontroller kezelőjére (``Controller`` struktúra).
+
+``cartInserted``<br>
+Logikai érték, amely jelzi, ha van érvényes kazetta betöltve.
+
+## NES.c
+
+```c
+NES* CreateNES()
+```
+
+Létrehoz egy új NES példányt.
+Lefoglalja a memóriát a NES struktúrának.
+Meghívja a komponensek létrehozó függvényeit (``CreateCPU``, ``CreatePPU``, ``CreateController``).
+Összekötés: Beállítja a ``cpu``-ban a ``ppu`` és ``controller`` mutatókat, hogy a processzor elérje azokat.
+Beállítja a ``cartInserted`` változót hamisra.
+
+---
+
+```c
+void UseCustomPalette(NES* nes, uint8_t* pal_ptr)
+```
+
+Lehetővé teszi egy egyéni színpaletta betöltését a PPU számára. Felszabadítja az előző egyéni palettát (ha volt), és beállítja az új mutatót.
+
+---
+
+```c
+void RemoveCartNES(NES* nes)
+```
+
+Ha van behelyezett kazetta, felszabadítja annak memóriáját (``FreeCart``) és a ``cartInserted`` változót hamisra állítja.
+
+---
+
+```c
+void DestroyNES(NES* nes)
+```
+
+Az emulátor leállításakor hívandó. Felszabadítja az összes alrendszert (CPU, PPU, Controller), végül felszabadítja magát a NES struktúrát.
+
+---
+
+```c
+bool SetCartNES(NES* nes, const char* path)
+```
+
+Megpróbál betölteni egy iNES ROM fájlt a megadott elérési útról.
+Ha sikeres a betöltés (``InsertCart`` visszatérési értéke), a kazetta pointerét átadja a CPU-nak és a PPU-nak is, hogy azok elérjék a ROM-ot. Beállítja a ``cartInserted``-et igazra.
+Igazzal tér vissza, ha a betöltés sikerességét. 
+
+---
+
+```c
+void ResetNES(NES *nes)
+```
+
+A konzol RESET gombjának megnyomását emulálja.<br>
+Csak behelyezett kazettával fut le.<br>
+Reset vektorra ugrás: A CPU program számlálóját a 0xFFFC és 0xFFFD memóriacímeken található 16 bites értékre állítja.
+
+---
+
+```c
+void TickNES(NES *nes)
+```
+
+Ez a függvény felelős egy teljes képkocka (frame) lefuttatásáért. Addig futtatja a ciklust, amíg a PPU ``endOfFrame``-el nem jelez.<br>
+**Szinkronizáció**: Az PPU háromszor gyorsabban, mint a CPU.
+1. Futtat egy CPU instrukciót (TickCPU).
+2. Megnézi, hány órajelbe telt az utasítás.
+3. Annak háromszorosát futtatja le a PPU-n (TickPPU ciklusban).
+
+A frame végén meghívja a ``DrawSprites`` függvényt (egyszerűsített sprite renderelés).
+Meghívja a ``DrawBackgroundColor`` függvényt a háttérszín kitöltéséhez.
+
