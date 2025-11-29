@@ -982,3 +982,69 @@ Ez a függvény felelős egy teljes képkocka (frame) lefuttatásáért. Addig f
 A frame végén meghívja a ``DrawSprites`` függvényt (egyszerűsített sprite renderelés).
 Meghívja a ``DrawBackgroundColor`` függvényt a háttérszín kitöltéséhez.
 
+## Cart.h
+
+```c
+typedef struct Cart {
+	// fejléc adatok
+	unsigned int PRG_size;
+	unsigned int CHR_size;
+	int nametableArrangement; 
+
+	// ROM
+	uint8_t *PRG;
+	uint8_t *CHR;
+
+	// mapper emuláció
+	int internalMapperNum;
+} Cart;
+```
+
+``PRG_size``<br>
+A programkód (PRG ROM) mérete bájtokban.
+
+``CHR_size``<br>
+A grafikai adatok (CHR ROM) mérete bájtokban. Ha ez 0, akkor a kazetta CHR-RAM-ot használ.
+
+``nametableArrangement``<br>
+A nametable tükrözés (mirroring) típusa, amelyet az iNES fejlécből olvasunk ki:
++ 0: Vertikális tükrözés
++ 1: Horizontális tükrözés
+
+``PRG``, ``CHR``<br>
+Mutatók a dinamikusan lefoglalt memóriaterületekre, ahová a fájlból betöltöttük a ROM tartalmát.
+
+``internalMapperNum``<br>
+A kazettához tartozó Mapper (memóriavezérlő) belső emulátor szerinti azonosítója.
+
+## Cart.c
+
+```c
+Cart* InsertCart(const char* path)
+```
+
+Megnyitja a megadott útvonalon található .nes fájlt, és létrehoz belőle egy Cart struktúrát.<br>
+Működése:
+1. Fejléc olvasása: Beolvassa a fájl első 16 bájtját (iNES fejléc).
+2. Méret számítás:
+    + A PRG méretet 16 KB-os egységekben tárolja a fejléc 4. bájtja (``iNES[4] * 0x4000``).
+    + A CHR méretet 8 KB-os egységekben tárolja a fejléc 5. bájtja (``iNES[5] * 0x2000``).
+3.  Tükrözés: A 6. bájt legalsó bitje határozza meg a tükrözést (``iNES[6] & 0b1``).
+4. Mapper detektálás: A 6. és 7. bájtok felső 4 bitjének összefűzésével kapjuk meg a Mapper ID-t. Ha az emulátor nem támogatja az adott mappert (``UNKNOWN_MAPPER``), a betöltés meghiúsul.
+5. Adatok betöltése:
+    + Lefoglalja a memóriát a PRG ROM-nak és beolvassa őket.
+    + Lefoglalja a memóriát a CHR ROM-nak (ha ``CHR_size`` nem 0) és beolvassa őket. Ha 0, a mutató ``NULL`` marad.
+
+Visszatérési értéke a létrehozott Cart struktúra, vagy hiba esetén ``NULL``.
+
+---
+
+```c
+void FreeCart(Cart* cart)
+```
+
+Felszabadítja a kazettához tartozó erőforrásokat:<br>
+A PRG ROM számára foglalt területet.<br>
+A CHR ROM számára foglalt területet.<br>
+Magát a Cart struktúrát.
+

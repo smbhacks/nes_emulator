@@ -14,7 +14,6 @@ typedef struct Cart {
 	uint8_t *PRG;
 	uint8_t *CHR;
 
-	Mapper mapper;
 	int internalMapperNum; // a Mapper.h enumeráció szerinti mapper sorszám
 } Cart;
 
