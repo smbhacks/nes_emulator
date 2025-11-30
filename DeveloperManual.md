@@ -59,7 +59,8 @@ A főciklus:
 
 1. Futtassuk a ``lib/gl3w`` mappában futtassuk a ``gl3w_gen.py`` szkriptet a gl3w forráskód létrehozásához
 2. Premake5 segítségével a projekt gyökerében futtassuk Linux esetén ``premake5 gmake``-t, Windows esetén pedig ``premake5 vs2022``.
-3. Linux esetén a projekt gyökerében futtassuk a ``make`` parancsot. Windows esetén nyissuk meg az létrehozott ``.sln`` fájlt, és ott fordítsuk.
+3. Ha Linuxot használunk, akkor töltsük le a ``gtk``-t. Pl. Ubuntun: ``sudo apt install libgtk-3-dev``
+4. Linux esetén a projekt gyökerében futtassuk a ``make`` parancsot. Windows esetén nyissuk meg az létrehozott ``.sln`` fájlt, és ott fordítsuk.
 
 # A core működése
 
