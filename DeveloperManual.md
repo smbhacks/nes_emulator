@@ -4,7 +4,20 @@ Az emulátor forráskódja a ``src/core`` mappában található.
 A mapper specifikus fájlok a ``src/core/mappers`` mappában találhatóak.
 A ``src/main.c`` fájl az, amely kezeli a grafikus megjelenést.
 
-## main.c
+# A core használata
+
+1. NES.h fájlt includeoljuk be a projektbe.
+2. Példányosítsuk az NES struktúrát (``NES* nes = CreateNES();``)
+3. A következő függvényekkel tudunk kazettát belehelyezni, és újraindítani a konzolt: ``SetCartNES(NES* nes, char* path)``, ``ResetNES(NES* nes)``, ``RemoveCartNES(NES* nes)``. A ``RemoveCartNES``-t hívjuk meg minden ``SetCartNES`` előtt.
+4. Futtassunk egy főciklust az emulátor bezárásig:<br>
+4.1 Töltsük fel a ``nes->controller`` 8 gomb értékeit<br>
+4.2 Hozzunk létre egy 256x240 RGB24 ``uint8_t`` buffert és állítsuk be az ``nes->ppu->display`` értéket annak címére.<br>
+4.3 Hívjuk meg a ``TickNES``-t egy képkocka futtatásához.<br>
+4.4 Az adott képkocka kirajzolandó képe megjelenik az ``nes->ppu->display``-ben.
+5. Bezáráskor hívjuk meg a ``RemoveCartNES``, majd a ``DestroyNES`` függvényeket.
+
+
+## Példa: main.c
 
 Ez a fájl tartalmazza a program belépési pontját (``main``), és felelős az ablakkezelésért, a felhasználói bemenet feldolgozásáért, a grafikus felület (GUI) megjelenítéséért és a fő emulációs ciklus időzítéséért. A projekt **SDL2**-t használ az ablakkezeléshez és bemenethez, valamint **OpenGL 3.0**-t és **cimgui**-t a grafikus felülethez, továbbá **Native File Dialog**-ot egy fájl megnyitásakor.
 
@@ -41,6 +54,8 @@ A főciklus:
 + Kirajzolja a NES képernyőt tartalmazó textúrát a háttérbe (``SDL_RenderCopy``).
 + Rárajzolja az ImGui felületet (``ImGui_ImplOpenGL3_RenderDrawData``).
 + Kiszámítja az eltelt időt, és ha a feldolgozás gyorsabb volt, mint a célzott képkocka idő (MSPF, 60 FPS esetén kb. 16ms), akkor a maradék időt várakozással tölti (``SDL_Delay``).
+
+# A core működése
 
 ## CPU.h
 
