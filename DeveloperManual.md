@@ -55,6 +55,12 @@ A főciklus:
 + Rárajzolja az ImGui felületet (``ImGui_ImplOpenGL3_RenderDrawData``).
 + Kiszámítja az eltelt időt, és ha a feldolgozás gyorsabb volt, mint a célzott képkocka idő (MSPF, 60 FPS esetén kb. 16ms), akkor a maradék időt várakozással tölti (``SDL_Delay``).
 
+## A példa buildelése
+
+1. Futtassuk a ``lib/gl3w`` mappában futtassuk a ``gl3w_gen.py`` szkriptet a gl3w forráskód létrehozásához
+2. Premake5 segítségével a projekt gyökerében futtassuk Linux esetén ``premake5 gmake``-t, Windows esetén pedig ``premake5 vs2022``.
+3. Linux esetén a projekt gyökerében futtassuk a ``make`` parancsot. Windows esetén nyissuk meg az létrehozott ``.sln`` fájlt, és ott fordítsuk.
+
 # A core működése
 
 ## CPU.h
