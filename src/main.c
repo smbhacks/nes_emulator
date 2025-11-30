@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
     fontCfg.OversampleH = 1;
     fontCfg.OversampleV = 1;
     fontCfg.PixelSnapH  = true;
-    fontCfg.GlyphMaxAdvanceX = __FLT_MAX__;
+    fontCfg.GlyphMaxAdvanceX = igGET_FLT_MAX();
     fontCfg.RasterizerMultiply = 1.0f;
     fontCfg.RasterizerDensity = 1.0f;
     fontCfg.EllipsisChar = 0;
