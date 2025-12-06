@@ -192,6 +192,9 @@ int main(int argc, char* argv[]) {
                     if (result == NFD_OKAY)
                     {
                         uint8_t* p = MallocPalette(outPath);
+                        #undef free
+                        free(outPath);
+                        #define free(P) debugmalloc_free_full((P), "free", __FILE__, __LINE__)
                         if (p != NULL)
                         {
                             UseCustomPalette(nes, p);
